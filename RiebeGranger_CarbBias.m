@@ -18,23 +18,9 @@ nuclide = '10Be';  % nuclide of interest '10Be', '36Cl'
 Ln = 160; 
 Lsm = 1500;
 Lfm = 4320;
-% surface productoin rates SLHL
-switch nuclide
-    case '10Be'
-        Pn = 4.01;          % production spallation
-        % muon production following Balco 2017
-        consts = struct;           % structure to store constants for muon production
-        consts.f_star=0.00191;     % Model 1A, alpha=1, neg. muon capture
-        consts.Natoms = 2.006e22;  % Oxygen atoms pr gram Quartz
-        consts.sigma0 = 0.280e-30; % model 1A, alpha=1, fast muon interaction
-        depths = 0;                % calculate muon productoin at these depths
-        pressure = 1013.25;        % assume standard atmosphere at sea level
-        
-        Pmu = P_mu_total(depths,pressure,consts,'no');   % compute muon production rates for all depths
-        
-    case '36Cl'
-        
-end
+Pn = 4.01;
+Psm = 0.1;
+Pfm = 0.01;
 
 
 Xs_Xr = 0:0.01:5;             % ratio of enrichment of depletion of target mineral in the soil vs bedrock Xsoil/Xrock
@@ -54,20 +40,16 @@ for i = 1:length(ph)
         NueD = Pn*Ln;
         
         % slow muons A
-        MsaN = Psm*Lsm.*(XX.*(1-exp(-ph(i)./Lsm))+exp(-ph(i)./Lsm));
-        MsaD = Psm*Lsm;
-        
-        % slow muons B
-        MsbN = Psb*Vsb.*(XX.*(1-exp(-ph(i)./Vsb))+exp(-ph(i)./Vsb));
-        MsbD = Psb*Vsb;
+        MsmN = Psm*Lsm.*(XX.*(1-exp(-ph(i)./Lsm))+exp(-ph(i)./Lsm));
+        MsmD = Psm*Lsm;
         
         % fast muons
-        MfN = Pfm*Lfm.*(XX.*(1-exp(-ph(i)./Lfm))+exp(-ph(i)./Lfm));
-        MfD = Pfm*Lfm;
+        MfmN = Pfm*Lfm.*(XX.*(1-exp(-ph(i)./Lfm))+exp(-ph(i)./Lfm));
+        MfmD = Pfm*Lfm;
         
         % total N
-        S_N =  NueN + MsaN + MsbN + MfN;
-        S_D =  NueD + MsaD + MsbD + MfD;
+        S_N =  NueN + MsmN + MfmN;
+        S_D =  NueD + MsmD + MfmD;
         
         CEF(i,j) = S_N/S_D;
         p_err(i,j) = (CEF(i,j)-1)*100;
