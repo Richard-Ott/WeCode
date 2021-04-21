@@ -1,4 +1,5 @@
-% This script calculates the denudation rate from a .
+% This script calculates the denudation rate from bedrock containing a mix
+% of insoluble an soluble minerals.
 % Loosely based on Riebe and Granger eqn. 14.
 % Conversly to Riebe and Granger, 2014, the nuclide concentrations are not
 % calculated with exponentials. Nuclide concentraions are calculated used
@@ -6,7 +7,8 @@
 % The script calculates the denudation rate for a paired nuclide
 % measurement of a soluble and an insoluble target mineral. Despite, the
 % nuclide cooncentrations, the bedrock chemistry is needed. This code
-% assumes that bedrock and soil only consist of the two minerals.
+% assumes that bedrock and soil only consist of the two target minerals and
+% another mineral that is assumed to be insoluble.
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
 % with a Metropolis Hastings sampling alrogithm. 
@@ -14,7 +16,7 @@
 % Richard Ott, 2021
 
 % the current version is written for 10Be and 36Cl, could easily be
-% expanded
+% expanded to other nuclides
 
 clc
 clear 
@@ -34,11 +36,12 @@ DEMdata = 'location';     % Do you want to compute the erosion rate for a specif
 ind = input('Which of the samples would you like to run (must be the same index in both input tables?) ');
 if ind ~= 0
     num10 = num10(ind,:); txt10 = txt10(ind,:);
-    num36 = num36(ind+2,:); txt36 = txt36(ind+2,:);
+    num36 = num36(ind+2,:); txt36 = txt36(ind+2,:);  % currently use an ind = 2
 end
 
 X.fQzB = num10(:,35); 
 X.fCaB = num36(:,82); 
+X.fXB  = num10(:,37);  
 
 
 %% assign data and initial basin calculations --------------------------- %
@@ -114,7 +117,9 @@ covariance_matrix = diag(ones(2,1).*[uncerts10(9);uncerts36(1)].^2);    % set up
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
-Xcur.fQzS = m0(1); Xcur.fCaS = 1 - m0(1);
+Xcur.fQzS = m0(1); 
+Xcur.fXS  = X.fXB * (m0(1)/X.fQzB);    % the other insoluble mineral should behave like quartz
+Xcur.fCaS = 1 - m0(1) - Xcur.fXS;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
 [N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,m0(2),Xcur);
 obs_err     = [N10m,N36m]' - Nobs;                          % observational error
 ln_like_cur = (-1/2)*sum((obs_err./dNobs).^2);              % ln likelihood of model
@@ -145,12 +150,14 @@ while con      % run this while loop until modelled values meet stopping criteri
     pprior_cand = 0;   % we're using uniform priors
 
     % new forward model ------------------------------------------------- %
-    Xcur.fQzS = candidate(1); Xcur.fCaS = 1 - candidate(1);
-    [N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,candidate(2),Xcur);
+    Xcur.fQzS = candidate(1); 
+    Xcur.fXS  = X.fXB * (candidate(1)/X.fQzB);
+    Xcur.fCaS = 1 - candidate(1) - Xcur.fXS;
+    [N10m,N36m,~,~] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,candidate(2),Xcur);
     obs_err     = [N10m,N36m]' - Nobs;                          % observational error
     ln_like_cand = (-1/2)*sum((obs_err./dNobs).^2);             % ln likelihood of model    
-    lr1 = (-1/2)*sum((candidate-current).^2./stds.^2);
-    lr2 = (-1/2)*sum((current-candidate).^2./stds.^2);
+    lr1 = (-1/2)*sum((candidate-current).^2./(k .*range_in).^2);
+    lr2 = (-1/2)*sum((current-candidate).^2./(k .*range_in).^2);
     
     ln_alpha = ln_like_cand + pprior_cand +lr1 - pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
     
@@ -180,6 +187,14 @@ while con      % run this while loop until modelled values meet stopping criteri
 end
 toc
 
+% Calculate weathering rate --------------------------------------------- %
+Xcur.fQzS = MAP(1);        
+Xcur.fXS  = X.fXB * (MAP(1)/X.fQzB);
+Xcur.fCaS = 1 - MAP(1) - Xcur.fXS;
+% take MAP solution and calculate soil erosion and soil denudation rate
+[~,~,Es,EsWs] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
+W = EsWs - Es;   % weathering should be the difference between soil erosion and soil denudation rate
+
 %% OUTPUT RESULTS ------------------------------------------------------- %
 
 % plot the chains
@@ -195,6 +210,6 @@ xlabel('iteration'); ylabel('log posterior probability')
 disp(['Denudation rate = ' num2str(MAP(2)/sp10.rb*10) ' mm/ka'])
 disp(['Fraction of quartz in soil fQzS = ' num2str(MAP(1))])
 disp(['Fraction of calcite in soil fCaS = ' num2str(1-MAP(1))])
-
+disp(['The calculated weathering rate = ' num2str(W/sp10.rb*10) ' mm/ka'])
 
 
