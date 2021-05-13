@@ -18,43 +18,16 @@
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded to other nuclides
 
+% THIS IS A SCRIPT TO RUN THE TEST DATA AND SEE HOW THE INVERSION WORKS
+
 clc
 clear 
 close all
-% addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book'
+% addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
 addpath '.\subroutines'
+addpath '.\subroutines\MCMC'
 
-% User choice and laod data --------------------------------------------- %
-scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-% [num10,txt10,~] = xlsread('10Be_data_CRONUS.xlsx',2);     % load 10Be data
-% [num36,txt36,~] = xlsread('36Cl_data_CRONUS.xlsx',2);     % load 36Cl data
-[num10,txt10,~] = xlsread('samples.xlsx','10Be Cronus');     % load 10Be data
-[num36,txt36,~] = xlsread('samples.xlsx','36Cl Cronus');     % load 36Cl data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');     % load compositional data
-
-soil_mass       = 80;      % average soil mass in g/cm²
-DEMdata = 'basin';         % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run (must be the same index in both input tables) ');
-
-if ind ~= 0
-    num10 = num10(ind,:); txt10 = txt10(ind,:);
-    num36 = num36(ind,:); txt36 = txt36(ind,:);  % currently use an ind = 2 because this sample is at different positions in my two current input tables
-    
-    if isnan(rawX{ind+1,2})
-        X.fQzS = Xdata(ind,1); 
-        X.fCaS = Xdata(ind,2); 
-        X.fXS  = Xdata(ind,3);  
-        Xmode = 'soil';
-    else
-        X.fQzB = Xdata(ind,1); 
-        X.fCaB = Xdata(ind,2); 
-        X.fXB  = Xdata(ind,3);  
-        Xmode = 'bedrock';
-    end
-end
+load test_data_input_v2.mat
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -74,14 +47,6 @@ pp=physpars();                               % get physical parameters
 nsamples=size(num10,1);                      % number of samples
 
 %% Calculate production rates ------------------------------------------- %
-
-% First, determine the effective neutron attenuation length following
-% Marrero, 2016.
-if isnan(num10(13)) || isnan(num36(11))
-    Leff = neutron_att_length_DEM(DEM,utmzone);
-    num10(13) = Leff;
-    num36(11) = Leff;
-end
 
 if strcmpi('basin',DEMdata)
     [nominal10,uncerts10,sp10,sf10,cp10,maxage10,maxdepth10,erate_raw10] = Cronus_prep10(num10,...
@@ -114,23 +79,12 @@ k = 0.04;                              % universal step size tuned to parameter 
 % stds = [0.03;2];                       % step size (crucial parameter)
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pnames = {'fQzS','D'};
+fQzS = [0,1];                          % fraction of quartz in soil
 D = [5,1e3];                           % Denudation min/max in mm/ka
 D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
 pprior_cur = 0;                        % only flat priors 
-
-switch Xmode
-    case 'soil'
-        pnames = {'fQzB','D'};                 % names of priors 
-        fQzB = [0,1];                          % fraction of quartz in bedrock   
-        range_in = [diff(fQzB);diff(D)];       % ranges of parameters
-    case 'bedrock'
-        pnames = {'fQzS','D'};                 % names of priors 
-        fQzS = [0,1];                          % fraction of quartz in soil
-        range_in = [diff(fQzS);diff(D)];       % ranges of parameters
-end
-
-
-
+range_in = [diff(fQzS);diff(D)];       % ranges of parameters
 
 % Resolution, under which parameters resolution does stop the model
 err_max = Nobs/100;                    % in at/g for both nuclides, here defined to be 1% of N
@@ -139,12 +93,7 @@ nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 m0 = nan(nd,1);
-switch Xmode
-    case 'soil'
-        m0(1) = fQzB(1)+rand*diff(fQzB);       % create random parameters
-    case 'bedrock'
-        m0(1) = fQzS(1)+rand*diff(fQzS);       % create random parameters
-end
+m0(1) = fQzS(1)+rand*diff(fQzS);       % create random parameters
 m0(2) = D(1)+rand*diff(D);             % create random parameters
 
 % the covariance matrix should be of the variance (sigma^2) rather than the
@@ -153,17 +102,9 @@ covariance_matrix = diag(ones(2,1).*[uncerts10(9);uncerts36(1)].^2);    % set up
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
-switch Xmode
-    case 'soil'
-        Xcur.fQzB = m0(1); 
-        Xcur.fXB  = X.fXS * (m0(1)/X.fQzS);    % the other insoluble mineral should behave like quartz
-        Xcur.fCaB = 1 - m0(1) - Xcur.fXB;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
-    case 'bedrock'
-        Xcur.fQzS = m0(1); 
-        Xcur.fXS  = X.fXB * (m0(1)/X.fQzB);    % the other insoluble mineral should behave like quartz
-        Xcur.fCaS = 1 - m0(1) - Xcur.fXS;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
-end
-
+Xcur.fQzS = m0(1); 
+Xcur.fXS  = X.fXB * (m0(1)/X.fQzB);    % the other insoluble mineral should behave like quartz
+Xcur.fCaS = 1 - m0(1) - Xcur.fXS;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
 [N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,m0(2),Xcur);
 obs_err     = [N10m,N36m]' - Nobs;                          % observational error
 ln_like_cur = (-1/2)*sum((obs_err./dNobs).^2);              % ln likelihood of model
@@ -184,36 +125,19 @@ while con      % run this while loop until modelled values meet stopping criteri
 %     candidate = current + randn(2,1).*stds;
     candidate = current + randn(nd,1).* k .*range_in;
     
-    switch Xmode
-        case 'soil'
-            Xcur.fQzB = candidate(1); 
-            Xcur.fXB  = X.fXS * (candidate(1)/X.fQzS);
-            Xcur.fCaB = 1 - candidate(1) - Xcur.fXB;        
-            % if random parameters are outside of prior range get a new candidate
-            counter = 0;
-            while any([candidate < [fQzB(1);D(1)] ; candidate > [fQzB(2);D(2)]; sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001])
-                counter = counter+1;
-                candidate = current + randn(nd,1).* k .*range_in;
-                if counter>1e4
-                    error('baaaaaaaaaaaaaaaaaaaaaaah')
-                end
-            end
-        case 'bedrock'
-            Xcur.fQzS = candidate(1); 
-            Xcur.fXS  = X.fXB * (candidate(1)/X.fQzB);
-            Xcur.fCaS = 1 - candidate(1) - Xcur.fXS;
-            while any([candidate < [fQzS(1);D(1)] ; candidate > [fQzS(2);D(2)]; sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001])
-                candidate = current + randn(nd,1).* k .*range_in;
-            end
+    % if random parameters are outside of prior range get a new candidate
+    while any(candidate > [fQzS(1);D(1)] & candidate < [fQzS(1);D(1)])
+        candidate = current + randn(nd,1).* k .*range_in;
     end
-
+        
     
     % calculate logpriors for unifrom distribution
     pprior_cand = 0;   % we're using uniform priors
 
     % new forward model ------------------------------------------------- %
-
-    
+    Xcur.fQzS = candidate(1); 
+    Xcur.fXS  = X.fXB * (candidate(1)/X.fQzB);
+    Xcur.fCaS = 1 - candidate(1) - Xcur.fXS;
     [N10m,N36m,~,~] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,candidate(2),Xcur);
     obs_err     = [N10m,N36m]' - Nobs;                          % observational error
     ln_like_cand = (-1/2)*sum((obs_err./dNobs).^2);             % ln likelihood of model    
@@ -237,14 +161,6 @@ while con      % run this while loop until modelled values meet stopping criteri
         pprior_cur = pprior_cand;
         nacc = nacc + 1;
         post(nacc,:) = [candidate; ln_like_cand+pprior_cand];
-        disp(it)
-        if ln_like_cand+pprior_cand > -1
-            k = 0.01;
-        elseif nacc > 350
-            disp('It seems like the algorithm has problems converging and will terminate now')
-            MAP = candidate;
-            break
-        end
     end
     
     if sum(abs(obs_err) < err_max) == 2   % if both modelled nuclide concentration are close to measured values
@@ -253,25 +169,17 @@ while con      % run this while loop until modelled values meet stopping criteri
     else
         con = 1;                          % if values too far off, keep going
     end
-    
 end
 toc
 
 % Calculate weathering rate --------------------------------------------- %
-switch Xmode
-    case 'soil'
-        X.fQzB = MAP(1);        
-        X.fXB  = X.fXS * (MAP(1)/X.fQzS);
-        X.fCaB = 1 - MAP(1) - Xcur.fXB;        
-    case 'bedrock'
-        X.fQzS = MAP(1);        
-        X.fXS  = X.fXB * (MAP(1)/X.fQzB);
-        X.fCaS = 1 - MAP(1) - Xcur.fXS;
-end
+Xcur.fQzS = MAP(1);        
+Xcur.fXS  = X.fXB * (MAP(1)/X.fQzB);
+Xcur.fCaS = 1 - MAP(1) - Xcur.fXS;
 % take MAP solution and calculate soil erosion and soil denudation rate
 [~,~,Es,EsWs] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
 W = EsWs - Es;   % weathering rate of carbonate minerals should be the difference between soil erosion and soil denudation rate
-W = W * X.fCaS;      % the landscape weathering rate should then be the carbonate weathering rate * the carbonate concentration in the soil       
+W = W * (1-MAP(1)-X.fXB * (MAP(1)/X.fQzB));% the landscape weathering rate should then be the carbonate weatherin rate * the carbonate concentration in the soil
 % NEED TO THINK MORE IF THIS LAST STEP IS CORRECT!
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
@@ -279,35 +187,25 @@ W = W * X.fCaS;      % the landscape weathering rate should then be the carbonat
 % plot the MCMC chains 
 figure()
 subplot(1,3,1); plot(post(:,1))
-switch Xmode
-    case 'soil'
-        xlabel('iteration'); ylabel(pnames{1}); ylim(fQzB);
-    case 'bedrock'
-        xlabel('iteration'); ylabel(pnames{1}); ylim(fQzS);
-end
-
+xlabel('iteration'); ylabel(pnames{1}); ylim(fQzS);
 subplot(1,3,2); plot(post(:,2))
 xlabel('iteration'); ylabel(pnames{2}); ylim(D)
 subplot(1,3,3); plot(post(:,3))
 xlabel('iteration'); ylabel('log posterior probability')
 
-% Report the values
+% Report the values computed values
 disp(['Denudation rate = ' num2str(MAP(2)/sp10.rb*10) ' mm/ka'])
-switch Xmode
-    case 'soil'
-        disp(['Fraction of quartz in bedrock fQzB = ' num2str(X.fQzB)])
-        disp(['Fraction of X in bedrock fXB = ' num2str(X.fXB)])  
-        disp(['Fraction of calcite in bedrock fCaB = ' num2str(X.fCaB)])        
-    case 'bedrock'
-        disp(['Fraction of quartz in soil fQzS = ' num2str(MAP(1))])
-        disp(['Fraction of X in soil fXS = ' num2str(X.fXS)])
-        disp(['Fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
-end
+disp(['Fraction of quartz in soil fQzS = ' num2str(MAP(1))])
+disp(['Fraction of X in soil fXS = ' num2str(X.fXB * (MAP(1)/X.fQzB))])
+disp(['Fraction of calcite in soil fCaS = ' num2str(1-MAP(1)-X.fXB * (MAP(1)/X.fQzB))])
 disp(['The calculated weathering rate = ' num2str(W/sp10.rb*10) ' mm/ka'])
 
-export = input('Do you want to export your results? "y" or "n"? ','s');
-if strcmpi(export,'y')
-    vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W'};
-    out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/sp10.rb*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\' txt10{1} '.xlsx'])
-end
+% Report the actual data used to generate the test data set
+load test_data_v2.mat
+disp([newline 'the "real" denudation rate was = ' num2str(D/sp10.rb*10) ' mm/ka'])
+disp(['the "real" fraction of quartz in soil fQzS = ' num2str(X.fQzS)])
+disp(['the "real" fraction of X in soil fXS = ' num2str(X.fXS)])
+disp(['the "real" fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
+
+
+

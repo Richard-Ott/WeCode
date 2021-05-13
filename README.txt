@@ -24,5 +24,7 @@ in bedrock), you can calculate the "real denudation rate". The code uses a Marko
 Carlo approach to solve for the correct denudation rate and enrichment/depletion of minerals
 in the soil.
 The code also estimates the weatheirng rate based on the given parameters.
-The code can be tested by loading the test_data_input file instead of loading acutal data.
 
+The code can be tested by running the RiebeGranger_Cronus_PairedCRN_MCMC_destData script
+
+Richard Ott, 2021
