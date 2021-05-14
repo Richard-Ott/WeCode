@@ -29,7 +29,7 @@ addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book
 addpath '.\subroutines'
 
 % User choice and load data --------------------------------------------- %
-nuclide = '10Be';      % '10Be' or '36Cl'
+nuclide = '36Cl';      % '10Be' or '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [num,txt,~]    = xlsread('samples.xlsx','10Be Cronus');                    % load CRN data
 [Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');  % load compositional data
@@ -267,6 +267,6 @@ end
 export = input('Do you want to export your results? "y" or "n"? ','s');
 if strcmpi(export,'y')
     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/sp.rb*10,MAP/sp.rb*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\' txt10{1} '.xlsx'])
+    out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/sp.rb*10,MAP/sp.rb*10 ,'VariableNames',vars);
+    writetable(out_table,[ '.\output\JO\10Be\' txt{1} '.xlsx'])
 end
