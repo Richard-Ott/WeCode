@@ -27,7 +27,7 @@ addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\
 addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book'
 addpath '.\subroutines'
 
-% User choice and laod data --------------------------------------------- %
+% User choice and load data --------------------------------------------- %
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 % [num10,txt10,~] = xlsread('10Be_data_CRONUS.xlsx',2);     % load 10Be data
 % [num36,txt36,~] = xlsread('36Cl_data_CRONUS.xlsx',2);     % load 36Cl data
@@ -36,7 +36,7 @@ scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');     % load compositional data
 
 soil_mass       = 80;      % average soil mass in g/cm²
-DEMdata = 'basin';         % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
+DEMdata.method = 'basin';  % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 ind = input('Which of the samples would you like to run (must be the same index in both input tables) ');
 
 if ind ~= 0
@@ -60,18 +60,17 @@ end
 
 % in case your denudation rate is from an alluvial sample and you desire a
 % pixel-by-pixel calculated production rate provide a DEM
-if strcmpi('basin',DEMdata)
-    DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    export = 1;             % do you want to save the individual sample scaling factors as .mat file?
+if strcmpi('basin',DEMdata.method)
+    DEMdata.DEM = GRIDobj();      % interactively choose the DEM that encompasses the basin
+    DEMdata.export = 1;           % do you want to save the individual sample scaling factors as .mat file?
     % This can be useful when the computation for scaling schemes like 'sa'
     % and 'sf'  takes a long time for a big basin and you want the scaling
     % factors saved for later
     
-    [DB,utmzone] = getBasins(DEM,num10(:,2),num10(:,1),'ll');  % delineate drainage basins and check their geometry
+    [DEMdata.DB,DEMdata.utmzone] = getBasins(DEM,num10(:,2),num10(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
 pp=physpars();                               % get physical parameters
-nsamples=size(num10,1);                      % number of samples
 
 %% Calculate production rates ------------------------------------------- %
 

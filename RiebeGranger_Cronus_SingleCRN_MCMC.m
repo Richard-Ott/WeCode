@@ -73,7 +73,6 @@ if strcmpi('basin',DEMdata)
 end
 
 pp=physpars();                               % get physical parameters
-nsamples=size(num,1);                        % number of samples
 
 %% Calculate production rates ------------------------------------------- %
 
