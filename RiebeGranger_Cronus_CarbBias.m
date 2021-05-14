@@ -27,7 +27,7 @@ nuclide = '10Be';      % nuclide of interest e.g. '10Be', '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [num,txt,~] = xlsread('10Be_data_CRONUS.xlsx',2);
 DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run)?');
+ind = input('Which of the samples would you like to run? ');
 if ind ~= 0
     num = num(ind,:); txt = txt(ind,:);
 end
@@ -60,12 +60,15 @@ v2struct(pars)
 % rename some variables. This may look ugly for this script but is used to
 % keep the naming in the subsoutines consistent
 if exist('sp10')
-    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10; erate_raw = erate_raw10;
+    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10;
     clear nominal10 uncerts10 sp10 sf10 cp10
 elseif exist('sp36')
-    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36; erate_raw = erate_raw36;
+    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36; 
     clear nominal36 uncerts36 sp36 sf36 cp36
 end
+
+erate_funcs = {@be10erateraw, @cl36erateraw};
+erate_raw=erate_funcs{n}(pp,sp,sf,cp,scaling_model,0);
 
 %% Compute for different soil masses and enrichment factors ------------- %
 Xs_Xr = 0:0.01:5;             % ratio of enrichment of depletion of target mineral in the soil vs bedrock Xsoil/Xrock

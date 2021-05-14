@@ -34,7 +34,7 @@ end
 [nominal10,uncerts10]=createage1026(num);    % Get basic info about the sample ages.
 
 sp = samppars1026(nominal10);
-if strcmpi('basin',DEMdata)
+if strcmpi('basin',DEMdata.method)
     sp.P = stdatm(nanmean(DEM.Z(DB.Z == 1)));
     sf = scalefacs1026Basin(sp,scaling_model,DEM,DB,utmzone);   % scaling factors
 else
@@ -55,7 +55,7 @@ maxdepth = maxage*max_erate_guess+sp.ls*sp.rb+1000; % safety factor in original 
 cp = comppars1026(pp,sp,sf,maxdepth);
 
 % the denudation rate 
-erate_raw = be10erateraw(pp,sp,sf,cp,scaling_model,0);
+% erate_raw = be10erateraw(pp,sp,sf,cp,scaling_model,0);
 %         eratemm=erate_raw/sp.rb*10;
 
 pars10.nominal10   = nominal10;
@@ -65,7 +65,7 @@ pars10.sf10        = sf;
 pars10.cp10        = cp;
 pars10.maxage      = maxage;
 pars10.maxdepth    = maxdepth;
-pars10.erate_raw10 = erate_raw;
+% pars10.erate_raw10 = erate_raw;
 pars10.pp          = pp;
 
 end

@@ -21,7 +21,7 @@ clc
 clear 
 close all
 
-test = 1; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
+test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
 if test
     load test_data_input_v2.mat
 else      % otherwise please load your respective data files
