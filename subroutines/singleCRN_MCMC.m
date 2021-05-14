@@ -20,7 +20,7 @@ tic
 % ------------------------------------------------------------------- %
 % set some constants
 pp = physpars();
-% sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
+sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
 soil_depths = 1:0.1:soil_mass; 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  

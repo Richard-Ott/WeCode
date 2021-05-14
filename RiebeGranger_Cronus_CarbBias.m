@@ -26,7 +26,7 @@ addpath '.\subroutines'
 nuclide = '10Be';      % nuclide of interest e.g. '10Be', '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [num,txt,~] = xlsread('10Be_data_CRONUS.xlsx',2);
-DEMdata = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
+DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 ind = input('Which of the samples would you like to run)?');
 if ind ~= 0
     num = num(ind,:); txt = txt(ind,:);
@@ -36,14 +36,14 @@ end
 
 % in case your denudation rate is from an alluvial sample and you desire a
 % pixel-by-pixel calculated production rate provide a DEM
-if strcmpi('basin',DEMdata)
-    DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    export = 1;             % do you want to save the individual sample scaling factors as .mat file?
+if strcmpi('basin',DEMdata.method)
+    DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
+    DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
     % This can be useful when the computation for scaling schemes like 'sa'
     % and 'sf'  takes a long time for a big basin and you want the scaling
     % factors saved for later
     
-    [DB,utmzone] = getBasins(DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
+    [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
 pp=physpars();                                   % get physical parameters
@@ -51,23 +51,20 @@ nsamples=size(num,1);                      % number of samples
 
 
 %% Calculate production rates ------------------------------------------- %
-switch nuclide
-    case '10Be'
-        if strcmpi('basin',DEMdata)
-            [nominal10,uncerts10,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep10(num,...
-                scaling_model,pp,DEMdata,DEM,DB,utmzone);
-        else
-            [nominal10,uncerts10,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep10(num,...
-                scaling_model,pp,DEMdata);
-        end
-    case '36Cl'
-        if strcmpi('basin',DEMdata)
-            [nominal36,uncerts36,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep36(num,...
-                scaling_model,pp,DEMdata,DEM,DB,utmzone);
-        else
-            [nominal36,uncerts36,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep36(num,...
-                scaling_model,pp,DEMdata);
-        end
+
+switch nuclide; case '10Be'; n = 1; case '36Cl'; n = 2; end    
+Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
+pars = Cronus_prep{n}(num,scaling_model,DEMdata);
+v2struct(pars)
+
+% rename some variables. This may look ugly for this script but is used to
+% keep the naming in the subsoutines consistent
+if exist('sp10')
+    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10; erate_raw = erate_raw10;
+    clear nominal10 uncerts10 sp10 sf10 cp10
+elseif exist('sp36')
+    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36; erate_raw = erate_raw36;
+    clear nominal36 uncerts36 sp36 sf36 cp36
 end
 
 %% Compute for different soil masses and enrichment factors ------------- %

@@ -53,7 +53,7 @@ maxdepth = maxage*max_erate_guess+sp.ls*sp.rb+1000;
 cp=comppars36(pp,sp,sf,maxdepth);
 
 % the denudation rate 
-% erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
+erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
 %         eratemm=erate_raw/sp.rb*10;
 
 pars36.nominal36   = nominal36;
@@ -63,7 +63,7 @@ pars36.sf36        = sf;
 pars36.cp36        = cp;
 pars36.maxage      = maxage;
 pars36.maxdepth    = maxdepth;
-% pars36.erate_raw36 = erate_raw;
+pars36.erate_raw36 = erate_raw;
 pars36.pp          = pp;
 
 end

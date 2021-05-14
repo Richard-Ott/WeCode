@@ -10,7 +10,7 @@ v2struct(pars36);
 tic
 % ------------------------------------------------------------------- %
 % set some constants
-pp = pp;                          % get physical parameters 
+pp = physpars();                          % get physical parameters 
 sp10.depthtotop = soil_mass;             % set depth to soil bedrock interface
 sp36.depthtotop = soil_mass;             % set depth to soil bedrock interface
 soil_depths = 1:0.1:soil_mass; 
