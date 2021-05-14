@@ -22,9 +22,9 @@ clc
 clear 
 close all
 
-test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
+test = 1; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
 if test
-    load 
+    load 'singleCRN_test_data_input.mat'
 else  % load your data files
 % addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
 addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
