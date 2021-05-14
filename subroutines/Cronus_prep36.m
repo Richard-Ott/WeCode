@@ -1,4 +1,4 @@
-function [nominal36,uncerts36,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep36(num,scaling_model,pp,DEMdata,varargin)
+function pars36 = Cronus_prep36(num,scaling_model,DEMdata)
 % This function computes the basic structures needed for CronucsCalc
 % calculations
 % This function includes the max_erate_guess which should sometimes needs
@@ -12,17 +12,28 @@ function [nominal36,uncerts36,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep3
 %           - if DEMdata == 1, then provide DEM, DB and utmzone of the DEM
 % Richard Ott, 2021
 
-if nargin == 7
-    DEM = varargin{1};
-    DB  = varargin{2};
-    utmzone = varargin{3};
+pp=physpars();                               % get physical parameters
+
+% First, determine the effective neutron attenuation length following
+% Marrero, 2016.
+if isnan(num(11)) && strcmpi(DEMdata.method,'basin')
+    Leff = neutron_att_length_DEM(DEMdata.DEM,DEMdata.utmzone);
+    num(11) = Leff;
+elseif isnan(num(11)) && strcmpi(DEMdata.method,'location')
+    Leff = neutron_att_length(num(1),num(2),num(3));
+    num(11) = Leff;
 end
 
+if strcmpi(DEMdata.method,'basin')
+    DEM = DEMdata.DEM;
+    DB  = DEMdata.DB;
+    utmzone = DEMdata.utmzone;
+end
 
 [nominal36,uncerts36,cov36]=createage36(num);    % Get basic info about the sample ages.
 
 sp = samppars36(nominal36);
-if strcmpi('basin',DEMdata)
+if strcmpi('basin',DEMdata.method)
     sp.P = stdatm(nanmean(DEM.Z(DB.Z == 1)));
     sf = scalefacs36Basin(sp,scaling_model,DEM,DB,utmzone);   % scaling factors
 else
@@ -42,8 +53,18 @@ maxdepth = maxage*max_erate_guess+sp.ls*sp.rb+1000;
 cp=comppars36(pp,sp,sf,maxdepth);
 
 % the denudation rate 
-erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
+% erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
 %         eratemm=erate_raw/sp.rb*10;
+
+pars36.nominal36   = nominal36;
+pars36.uncerts36   = uncerts36;
+pars36.sp36        = sp;
+pars36.sf36        = sf;
+pars36.cp36        = cp;
+pars36.maxage      = maxage;
+pars36.maxdepth    = maxdepth;
+% pars36.erate_raw36 = erate_raw;
+pars36.pp          = pp;
 
 end
 

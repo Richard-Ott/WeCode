@@ -1,107 +1,26 @@
-% This script calculates the denudation rate from bedrock containing a mix
-% of insoluble an soluble minerals.
-% Loosely based on Riebe and Granger eqn. 14.
-% Conversly to Riebe and Granger, 2014, the nuclide concentrations are not
-% calculated with exponentials. Nuclide concentraions are calculated used
-% CronusCalc (Marrero, 2016). 
-% The script calculates the denudation rate for a single nuclide
-% measurement of a soluble or an insoluble target mineral. Despite, the
-% nuclide cooncentrations, the bedrock or soil chemistry is needed. This code
-% assumes that bedrock and soil only consist of the two target minerals and
-% another mineral that is assumed to be insoluble.
-%
-% The parameter search is performed via a Markov-Chain Monte Carlo approach
-% with a Metropolis Hastings sampling alrogithm. 
-%
+function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,W,X,soil_mass,n)
+% Calculates the "real" denudation rate from a nuclide measurement, the
+% bedrock or soil chemistry and a weathering rate.
+% The solution is found through a MCMC algorithm.
 % Richard Ott, 2021
 
-% the current version is written for 10Be and 36Cl, could easily be
-% expanded to other nuclides
+v2struct(pars)   % unpack variables in parameters structure
 
-clc
-clear 
-close all
-% addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Water_CH'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book'
-addpath '.\subroutines'
-
-% User choice and load data --------------------------------------------- %
-nuclide = '36Cl';      % '10Be' or '36Cl'
-scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~]    = xlsread('samples.xlsx','10Be Cronus');                    % load CRN data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');  % load compositional data
-[Wdata,Wtxt,~] = xlsread('Weathering rates.xlsx');                         % load Weathering data
-
-
-soil_mass       = 80;      % average soil mass in g/cm²
-DEMdata = 'basin';         % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run ');
-
-if ind ~= 0
-    num = num(ind,:); txt = txt(ind,:);
+% I have to put this ugly if-else-statement here to rename the variables
+% otherwise I'd need to define new parameter calculation funtions...
+if exist('sp10')
+    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10;
+    clear nominal10 uncerts10 sp10 sf10 cp10
+elseif exist('sp36')
+    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36;
+    clear nominal36 uncerts36 sp36 sf36 cp36
+end
     
-    if isnan(rawX{ind+1,2})
-        X.fQzS = Xdata(ind,1); 
-        X.fCaS = Xdata(ind,2); 
-        X.fXS  = Xdata(ind,3);  
-        Xmode = 'soil';
-    else
-        X.fQzB = Xdata(ind,1); 
-        X.fCaB = Xdata(ind,2); 
-        X.fXB  = Xdata(ind,3);  
-        Xmode = 'bedrock';
-    end
-end
-W = Wdata(1,11)*1e3; Wstd = Wdata(1,12)*1e3;
-switch nuclide; case '10Be'; n = 1; case '36Cl'; n = 2; end    
-
-%% assign data and initial basin calculations --------------------------- %
-
-% in case your denudation rate is from an alluvial sample and you desire a
-% pixel-by-pixel calculated production rate provide a DEM
-if strcmpi('basin',DEMdata)
-    DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    export = 1;             % do you want to save the individual sample scaling factors as .mat file?
-    % This can be useful when the computation for scaling schemes like 'sa'
-    % and 'sf'  takes a long time for a big basin and you want the scaling
-    % factors saved for later
-    
-    [DB,utmzone] = getBasins(DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
-end
-
-pp=physpars();                               % get physical parameters
-
-%% Calculate production rates ------------------------------------------- %
-
-% First, determine the effective neutron attenuation length following
-% Marrero, 2016.
-if isnan(num(13)) && strcmpi(nuclide,'10Be')
-    Leff = neutron_att_length_DEM(DEM,utmzone);
-    num(13) = Leff;
-elseif isnan(num(11)) && strcmpi(nuclide,'36Cl')
-    Leff = neutron_att_length_DEM(DEM,utmzone);
-    num(11) = Leff;
-end
-
-% Calculate production rates
-Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
-if strcmpi('basin',DEMdata)
-    [nominal,uncerts,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep{n}(num,...
-        scaling_model,pp,DEMdata,DEM,DB,utmzone);
-else
-    [nominal,uncerts,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep{n}(num,...
-        scaling_model,pp,DEMdata);
-end
-
-%% Compute nuclide concentrations for different enrichment/depletions and match measured values ------------- %
 tic
 % ------------------------------------------------------------------- %
 % set some constants
-sp10.depthtotop = soil_mass;           % set depth to soil bedrock interface
-sp36.depthtotop = soil_mass;           % set depth to soil bedrock interface
+pp = physpars();
+% sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
 soil_depths = 1:0.1:soil_mass; 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
@@ -115,9 +34,8 @@ Nmax = 1e3;                            % maximum number of models
 k = 0.04;                              % universal step size tuned to parameter range
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = [5,1e3];                           % Denudation min/max in mm/ka
-D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
-W = W/10*sp.rb;                        % convert to g/cm²/ka 
+D = D/10*sp.rb;                        % convert to g/cmÂ²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
+W = W/10*sp.rb;                        % convert to g/cmÂ²/ka 
 pprior_cur = 0;                        % only flat priors 
 
 pnames = {'D'};
@@ -137,7 +55,7 @@ covariance_matrix = diag(ones(1,1).*uncerts(data_ind).^2);    % set up covarianc
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
 fE = 1 - W/m0;                          % fraciotn of erosion (to total denudation)
-switch Xmode
+switch X.mode
     case 'soil'
         R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;     % ratio of insoluble to soluble material
         Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
@@ -171,7 +89,7 @@ while con      % run this while loop until modelled values meet stopping criteri
     candidate = current + randn(nd,1).* k .*range_in;
     
     fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
-    switch Xmode
+    switch X.mode
         case 'soil'
             R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;     % ratio of insoluble to soluble material
             Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
@@ -240,32 +158,5 @@ end
 toc
 
 X = Xcur;
-
-%% OUTPUT RESULTS ------------------------------------------------------- %
-
-% plot the MCMC chains 
-figure()
-subplot(1,2,1); plot(post(:,1))
-xlabel('iteration'); ylabel(pnames); ylim(D)
-subplot(1,2,2); plot(post(:,2))
-xlabel('iteration'); ylabel('log posterior probability')
-
-% Report the values
-disp(['Denudation rate = ' num2str(MAP/sp.rb*10) ' mm/ka'])
-switch Xmode
-    case 'soil'
-        disp(['Fraction of quartz in bedrock fQzB = ' num2str(X.fQzB)])
-        disp(['Fraction of X in bedrock fXB = ' num2str(X.fXB)])  
-        disp(['Fraction of calcite in bedrock fCaB = ' num2str(X.fCaB)])        
-    case 'bedrock'
-        disp(['Fraction of quartz in soil fQzS = ' num2str(X.fQzS)])
-        disp(['Fraction of X in soil fXS = ' num2str(X.fXS)])
-        disp(['Fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
 end
 
-export = input('Do you want to export your results? "y" or "n"? ','s');
-if strcmpi(export,'y')
-    vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/sp.rb*10,MAP/sp.rb*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\JO\10Be\' txt{1} '.xlsx'])
-end

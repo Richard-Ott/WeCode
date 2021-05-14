@@ -1,4 +1,4 @@
-function [nominal10,uncerts10,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep10(num,scaling_model,pp,DEMdata,varargin)
+function pars10 = Cronus_prep10(num,scaling_model,DEMdata)
 % This function computes the basic structures needed for CronucsCalc
 % calculations
 % This function includes the max_erate_guess which should sometimes needs
@@ -12,10 +12,22 @@ function [nominal10,uncerts10,sp,sf,cp,maxage,maxdepth,erate_raw] = Cronus_prep1
 %           - if DEMdata == 1, then provide DEM, DB and utmzone of the DEM
 % Richard Ott, 2021
 
-if nargin == 7
-    DEM = varargin{1};
-    DB  = varargin{2};
-    utmzone = varargin{3};
+pp=physpars();                               % get physical parameters
+
+% First, determine the effective neutron attenuation length following
+% Marrero, 2016.
+if isnan(num(13)) && strcmpi(DEMdata.method,'basin')
+    Leff = neutron_att_length_DEM(DEMdata.DEM,DEMdata.utmzone);
+    num(13) = Leff;
+elseif isnan(num(13)) && strcmpi(DEMdata.method,'location')
+    Leff = neutron_att_length(num(1),num(2),num(3));
+    num(13) = Leff;
+end
+
+if strcmpi(DEMdata.method,'basin')
+    DEM = DEMdata.DEM;
+    DB  = DEMdata.DB;
+    utmzone = DEMdata.utmzone;
 end
 
 
@@ -43,8 +55,18 @@ maxdepth = maxage*max_erate_guess+sp.ls*sp.rb+1000; % safety factor in original 
 cp = comppars1026(pp,sp,sf,maxdepth);
 
 % the denudation rate 
-erate_raw = be10erateraw(pp,sp,sf,cp,scaling_model,0);
+% erate_raw = be10erateraw(pp,sp,sf,cp,scaling_model,0);
 %         eratemm=erate_raw/sp.rb*10;
+
+pars10.nominal10   = nominal10;
+pars10.uncerts10   = uncerts10;
+pars10.sp10        = sp;
+pars10.sf10        = sf;
+pars10.cp10        = cp;
+pars10.maxage      = maxage;
+pars10.maxdepth    = maxdepth;
+% pars10.erate_raw10 = erate_raw;
+pars10.pp          = pp;
 
 end
 
