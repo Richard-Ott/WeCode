@@ -22,7 +22,7 @@ clc
 clear 
 close all
 
-test = 1; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
+test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
 if test
     load 'singleCRN_test_data_input.mat'
 else  % load your data files
@@ -34,10 +34,10 @@ addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book
 addpath '.\subroutines'
 
 % User choice and load data --------------------------------------------- %
-nuclide = '10Be';      % '10Be' or '36Cl'
+nuclide = '36Cl';      % '10Be' or '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~]    = xlsread('samples.xlsx','10Be Cronus');                    % load CRN data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');  % load compositional data
+[num,txt,~]    = xlsread('samples.xlsx','36Cl Cronus');                    % load CRN data
+[Xdata,~,rawX] = xlsread('samples.xlsx','Samp_comp_for_Matlab_Bedrock');  % load compositional data
 [Wdata,Wtxt,~] = xlsread('Weathering rates.xlsx');                         % load Weathering data
 
 
@@ -121,6 +121,6 @@ end
 export = input('Do you want to export your results? "y" or "n"? ','s');
 if strcmpi(export,'y')
     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/rho*10,MAP/rho*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\JO\10Be\' txt{1} '.xlsx'])
+    out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP/rho*10 ,'VariableNames',vars);
+    writetable(out_table,[ '.\output\JO\36Cl\' txt{1} '_' X.mode '.xlsx'])
 end

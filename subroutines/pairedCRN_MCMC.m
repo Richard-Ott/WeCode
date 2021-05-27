@@ -23,7 +23,7 @@ dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Nmax = 1e3;                            % maximum number of models
-k = 0.04;                              % universal step size tuned to parameter range
+k = 0.09;                              % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
@@ -99,15 +99,27 @@ while con      % run this while loop until modelled values meet stopping criteri
             Xcur.fXB  = X.fXS * (candidate(1)/X.fQzS);
             Xcur.fCaB = 1 - candidate(1) - Xcur.fXB;        
             % if random parameters are outside of prior range get a new candidate
-            while any([candidate < [fQzB(1);D(1)] ; candidate > [fQzB(2);D(2)]; sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001])
+            while any([candidate < [fQzB(1);D(1)] ; candidate > [fQzB(2);D(2)]; sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001;any([Xcur.fQzB,Xcur.fXB,Xcur.fCaB]<0) ])
                 candidate = current + randn(nd,1).* k .*range_in;
+                Xcur.fQzB = candidate(1); 
+                Xcur.fXB  = X.fXS * (candidate(1)/X.fQzS);
+                Xcur.fCaB = 1 - candidate(1) - Xcur.fXB; 
             end
         case 'bedrock'
             Xcur.fQzS = candidate(1); 
             Xcur.fXS  = X.fXB * (candidate(1)/X.fQzB);
             Xcur.fCaS = 1 - candidate(1) - Xcur.fXS;
-            while any([candidate < [fQzS(1);D(1)] ; candidate > [fQzS(2);D(2)]; sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001])
+            counter = 0;
+            while any([candidate < [fQzS(1);D(1)] ; candidate > [fQzS(2);D(2)]; sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001; any([Xcur.fQzS,Xcur.fXS,Xcur.fCaS]<0)])
                 candidate = current + randn(nd,1).* k .*range_in;
+                Xcur.fQzS = candidate(1); 
+                Xcur.fXS  = X.fXB * (candidate(1)/X.fQzB);
+                Xcur.fCaS = 1 - candidate(1) - Xcur.fXS;
+                counter = counter+1;
+                if counter > 1e5
+                    error('cant find a decent sample')
+                end
+                    
             end
     end
 

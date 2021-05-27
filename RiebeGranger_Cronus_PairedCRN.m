@@ -38,7 +38,7 @@ scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 % [num36,txt36,~] = xlsread('36Cl_data_CRONUS.xlsx',2);     % load 36Cl data
 [num10,txt10,~] = xlsread('samples.xlsx','10Be Cronus');     % load 10Be data
 [num36,txt36,~] = xlsread('samples.xlsx','36Cl Cronus');     % load 36Cl data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Sample_composition_for Matlab');     % load compositional data
+[Xdata,~,rawX] = xlsread('samples.xlsx','Samp_comp_for_Matlab_Bedrock');     % load compositional data
 
 soil_mass       = 80;      % average soil mass in g/cm²
 DEMdata.method = 'basin';  % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
@@ -124,5 +124,5 @@ export = input('Do you want to export your results? "y" or "n"? ','s');
 if strcmpi(export,'y')
     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
     out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/pars10.sp10.rb*10,MAP(2)/pars10.sp10.rb*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '.xlsx'])
+    writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '_' X.mode '.xlsx'])
 end

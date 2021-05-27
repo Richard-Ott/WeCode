@@ -15,7 +15,7 @@ N_SBI36 = predN36  (pp,sp36,sf36,cp36,maxage,scaling_model,1);  % 36Cl concentra
 sf36.currentsf=getcurrentsf(sf36,0,scaling_model,'cl');
 
 soil_depths = 1:0.1:soil_mass;
-Pz36 = nan(1,length(soild_depths));
+Pz36 = nan(1,length(soil_depths));
 for j = 1:length(soil_depths)
     Pz36(j) = prodz36  (soil_depths(j),pp,sf36,cp36);
 end

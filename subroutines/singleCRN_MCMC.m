@@ -68,7 +68,7 @@ switch X.mode
         Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
 end
 
-forward_model = {@N10_forward,@N36forward};        % to avoid opening more switch statements, I compile the functions for each case here
+forward_model = {@N10_forward,@N36_forward};        % to avoid opening more switch statements, I compile the functions for each case here
 
 [Nm,~] = forward_model{n}(pp,sp,sf,cp,maxage,scaling_model,soil_mass,m0,Xcur);
 obs_err     = Nm - Nobs;                           % observational error
@@ -85,27 +85,37 @@ con = 1;
 while con      % run this while loop until modelled values meet stopping criterion
     it = it+1;        
 
-    % make new random parameters
+    % make new random parameters ------------------------------------------
     candidate = current + randn(nd,1).* k .*range_in;
     
     fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
     switch X.mode
         case 'soil'
-            R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;     % ratio of insoluble to soluble material
+            R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;             % ratio of insoluble to soluble material
             Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
             Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
             Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;  
             % if random parameters are outside of prior range get a new candidate
-            while any([candidate < D(1) ; candidate > D(2)])
+            while any([candidate < D(1) ; candidate > D(2); sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001;any([Xcur.fQzB,Xcur.fXB,Xcur.fCaB]<0) ])
                 candidate = current + randn(nd,1).* k .*range_in;
+                fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
+                R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;         % ratio of insoluble to soluble material
+                Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
+                Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
+                Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;  
             end
         case 'bedrock'
-            R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;     % ratio of insoluble to soluble material
+            R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;             % ratio of insoluble to soluble material
             Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
             Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
             Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
-            while any([candidate < D(1); candidate > D(2)])
+            while any([candidate < D(1); candidate > D(2); sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001;any([Xcur.fQzS,Xcur.fXS,Xcur.fCaS]<0)])
                 candidate = current + randn(nd,1).* k .*range_in;
+                fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
+                R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;         % ratio of insoluble to soluble material
+                Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
+                Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
+                Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
             end
     end
     
@@ -126,10 +136,10 @@ while con      % run this while loop until modelled values meet stopping criteri
         ln_alpha = 0;
     end
 
-    % Generate a U(0,1) random number and take its logarithm.
+    % Generate a U(0,1) random number and take its logarithm 
     ln_t = log(rand());
     
-        % Accept or reject the step.
+        % Accept or reject the step ---------------------------------------
     if (ln_t < ln_alpha)
         % Accept the step.
         current = candidate;
