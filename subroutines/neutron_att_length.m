@@ -15,7 +15,7 @@ function Leff = neutron_att_length(lat,lon,elevation)
 pressure = 1013.25*exp(((-0.03417)/6.5e-3)*(log(288.15)-log(288.15-(6.5e-3*elevation)))); 
 
 
-Leff = nan(length(pressure_vector),1);
+Leff = nan(length(pressure),1);
 
 load pmag_consts.mat                  % get magentic field constants from CRONUS
 % prepare sample file for rigiditycutoff calculation
@@ -29,7 +29,7 @@ sample.pressure = pressure;
 tdsf = get_tdsf(sample,pmag_consts);
 Rc = mean(tdsf.Rc_Sa);
 
-Leff = rawattenuationlength(pressure,single(Rc)); 
+Leff = rawattenuationlength(single(pressure),single(Rc)); 
 
 end
 

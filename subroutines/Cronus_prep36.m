@@ -30,6 +30,17 @@ if strcmpi(DEMdata.method,'basin')
     utmzone = DEMdata.utmzone;
 end
 
+num(end:79) = nan;
+% add default parameters ------------------------------
+if isnan(num(5)), num(5) = 0.0625; end % default sample thcikness cm
+if isnan(num(6)), num(6) = 2.65;   end % default sample density g/cm³
+if isnan(num(7)), num(7) = 1;      end % default shielding 
+if isnan(num(8)), num(8) = 0;      end % default erosion rate
+if isnan(num(12)),num(12) = 0;     end % default top to sample cm
+if isnan(num(79)),num(79) = 0;     end % default covariation
+% -----------------------------------------------------
+
+
 [nominal36,uncerts36,cov36]=createage36(num);    % Get basic info about the sample ages.
 
 sp = samppars36(nominal36);
@@ -37,6 +48,7 @@ if strcmpi('basin',DEMdata.method)
     sp.P = stdatm(nanmean(DEM.Z(DB.Z == 1)));
     sf = scalefacs36Basin(sp,scaling_model,DEM,DB,utmzone);   % scaling factors
 else
+    sp.P = stdatm(sp.elevation);
     sf = scalefacs36(sp,scaling_model);   % scaling factors
 end
 % We need an absolute maximum age for several purposes, including

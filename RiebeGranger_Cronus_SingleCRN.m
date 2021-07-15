@@ -21,20 +21,22 @@
 clc
 clear 
 close all
-
-test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
-if test
-    load 'singleCRN_test_data_input.mat'
-else  % load your data files
-% addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Water_CH'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book'
 addpath '.\subroutines'
 
-% User choice and load data --------------------------------------------- %
 nuclide = '36Cl';      % '10Be' or '36Cl'
+test = 1; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
+if test
+%     load 'singleCRN_test_data_input.mat'
+    [num,txt,~]    = xlsread('Test_Input.xlsx','36Cl Cronus');           % load CRN data
+    [Xdata,~,rawX] = xlsread('Test_Input.xlsx','Sample_comp_for_Matlab');  % load compositional data
+    W              = 50;  % weathering rate mm/ka
+    Wstd           = 5;   % uncert. weathering rate mm/ka
+    ind = 1;
+else  % load your data files
+addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
+addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Water_CH'
+
+% User choice and load data --------------------------------------------- %
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [num,txt,~]    = xlsread('samples.xlsx','36Cl Cronus');                    % load CRN data
 [Xdata,~,rawX] = xlsread('samples.xlsx','Samp_comp_for_Matlab_Bedrock');  % load compositional data
@@ -42,8 +44,10 @@ scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 
 
 soil_mass       = 80;         % average soil mass in g/cm²
-DEMdata.method  = 'basin';    % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
+DEMdata.method  = 'location'; % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 ind = input('Which of the samples would you like to run ');
+W = Wdata(1,11)*1e3; Wstd = Wdata(1,12)*1e3;
+end
 
 if ind ~= 0
     num = num(ind,:); txt = txt(ind,:);
@@ -60,8 +64,7 @@ if ind ~= 0
         X.mode = 'bedrock';
     end
 end
-W = Wdata(1,11)*1e3; Wstd = Wdata(1,12)*1e3;
-end
+
 switch nuclide; case '10Be'; n = 1; case '36Cl'; n = 2; end    
 
 %% assign data and initial basin calculations --------------------------- %

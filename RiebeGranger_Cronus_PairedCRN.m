@@ -20,6 +20,7 @@
 clc
 clear 
 close all
+addpath '.\subroutines'
 
 test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
 if test
@@ -27,21 +28,19 @@ if test
 else      % otherwise please load your respective data files
 
 % addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\InversionBasics\MCMC_book'
-addpath '.\subroutines'
+% addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
+
 
 % User choice and load data --------------------------------------------- %
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 % [num10,txt10,~] = xlsread('10Be_data_CRONUS.xlsx',2);     % load 10Be data
 % [num36,txt36,~] = xlsread('36Cl_data_CRONUS.xlsx',2);     % load 36Cl data
-[num10,txt10,~] = xlsread('samples.xlsx','10Be Cronus');     % load 10Be data
-[num36,txt36,~] = xlsread('samples.xlsx','36Cl Cronus');     % load 36Cl data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Samp_comp_for_Matlab_Bedrock');     % load compositional data
+[num10,txt10,~] = xlsread('Test_Input.xlsx','10Be Cronus');     % load 10Be data
+[num36,txt36,~] = xlsread('Test_Input.xlsx','36Cl Cronus');     % load 36Cl data
+[Xdata,~,rawX] = xlsread('Test_Input.xlsx','Sample_comp_for_Matlab');     % load compositional data
 
 soil_mass       = 80;      % average soil mass in g/cm²
-DEMdata.method = 'basin';  % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
+DEMdata.method = 'location';  % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 ind = input('Which of the samples would you like to run (must be the same index in both input tables) ');
 
 % select the desired sample parameters from the input tables
