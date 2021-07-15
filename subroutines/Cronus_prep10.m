@@ -30,7 +30,7 @@ if strcmpi(DEMdata.method,'basin')
     utmzone = DEMdata.utmzone;
 end
 
-num(end:32) = NaN; % fills up empty values for Cronus
+num(end+1:32) = NaN; % fills up empty values for Cronus
 
 % add default values if empty ---------------------------------------------
 if isnan(num(5)), num(5) = 0.0625; end % default sample thcikness cm

@@ -30,7 +30,7 @@ if strcmpi(DEMdata.method,'basin')
     utmzone = DEMdata.utmzone;
 end
 
-num(end:79) = nan;
+num(end+1:79) = nan;
 % add default parameters ------------------------------
 if isnan(num(5)), num(5) = 0.0625; end % default sample thcikness cm
 if isnan(num(6)), num(6) = 2.65;   end % default sample density g/cm³

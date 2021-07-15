@@ -1,10 +1,13 @@
-function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,W,X,soil_mass,n)
+function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,X)
 % Calculates the "real" denudation rate from a nuclide measurement, the
 % bedrock or soil chemistry and a weathering rate.
 % The solution is found through a MCMC algorithm.
 % Richard Ott, 2021
 
 v2struct(pars)   % unpack variables in parameters structure
+W = X.W;
+soil_mass = X.soil_mass;
+n = X.n;
 
 % I have to put this ugly if-else-statement here to rename the variables
 % otherwise I'd need to define new parameter calculation funtions...

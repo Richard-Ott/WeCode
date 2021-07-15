@@ -1,14 +1,5 @@
-% This script calculates the denudation rate from bedrock containing a mix
-% of insoluble an soluble minerals.
-% Loosely based on Riebe and Granger eqn. 14.
-% Conversly to Riebe and Granger, 2014, the nuclide concentrations are not
-% calculated with exponentials. Nuclide concentraions are calculated used
-% CronusCalc (Marrero, 2016). 
 % The script calculates the denudation rate for a paired nuclide
-% measurement of a soluble and an insoluble target mineral. Despite, the
-% nuclide cooncentrations, the bedrock OR soil chemistry is needed. This code
-% assumes that bedrock and soil only consist of the two target minerals and
-% another mineral that is assumed to be insoluble.
+% measurement of a soluble and an insoluble target mineral. 
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
 % with a Metropolis Hastings sampling alrogithm. 
@@ -22,45 +13,8 @@ clear
 close all
 addpath '.\subroutines'
 
-test = 0; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
-if test
-    load test_data_input_v2.mat
-else      % otherwise please load your respective data files
-
-% addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-% addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-
-
-% User choice and load data --------------------------------------------- %
-scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-% [num10,txt10,~] = xlsread('10Be_data_CRONUS.xlsx',2);     % load 10Be data
-% [num36,txt36,~] = xlsread('36Cl_data_CRONUS.xlsx',2);     % load 36Cl data
-[num10,txt10,~] = xlsread('Test_Input.xlsx','10Be Cronus');     % load 10Be data
-[num36,txt36,~] = xlsread('Test_Input.xlsx','36Cl Cronus');     % load 36Cl data
-[Xdata,~,rawX] = xlsread('Test_Input.xlsx','Sample_comp_for_Matlab');     % load compositional data
-
-soil_mass       = 80;      % average soil mass in g/cm²
-DEMdata.method = 'location';  % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run (must be the same index in both input tables) ');
-
-% select the desired sample parameters from the input tables
-if ind ~= 0
-    num10 = num10(ind,:); txt10 = txt10(ind,:);
-    num36 = num36(ind,:); txt36 = txt36(ind,:);  % currently use an ind = 2 because this sample is at different positions in my two current input tables
-    
-    if isnan(rawX{ind+1,2})
-        X.fQzS = Xdata(ind,1); 
-        X.fCaS = Xdata(ind,2); 
-        X.fXS  = Xdata(ind,3);  
-        X.mode = 'soil';
-    else
-        X.fQzB = Xdata(ind,1); 
-        X.fCaB = Xdata(ind,2); 
-        X.fXB  = Xdata(ind,3);  
-        X.mode = 'bedrock';
-    end
-end
-end    
+% load data
+[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Paired.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -73,14 +27,14 @@ if strcmpi('basin',DEMdata.method)
     % and 'sf'  takes a long time for a big basin and you want the scaling
     % factors saved for later
     
-    [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num10(:,2),num10(:,1),'ll');  % delineate drainage basins and check their geometry
+    [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num.num10(:,2),num.num10(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
 
 %% Calculate production rates ------------------------------------------- %
 
-pars10 = Cronus_prep10(num10,scaling_model,DEMdata);
-pars36 = Cronus_prep36(num36,scaling_model,DEMdata);
+pars10 = Cronus_prep10(num.num10,scaling,DEMdata);
+pars36 = Cronus_prep36(num.num36,scaling,DEMdata);
 
 
 %% Run MCMC inversion for "real" denudation rate and weathering rate ---- %
@@ -91,7 +45,7 @@ D = [5,1e3];                           % Denudation min/max in mm/ka
 % automatically set to fractions between 0 and 1 in the MCMC function.
 
 % run inversion
-[X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling_model,D,X,soil_mass);
+[X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling,D,X);
 
 
 %% OUTPUT RESULTS ------------------------------------------------------- %

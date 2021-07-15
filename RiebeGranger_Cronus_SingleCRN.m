@@ -1,14 +1,5 @@
-% This script calculates the denudation rate from bedrock containing a mix
-% of insoluble an soluble minerals.
-% Loosely based on Riebe and Granger eqn. 14.
-% Conversly to Riebe and Granger, 2014, the nuclide concentrations are not
-% calculated with exponentials. Nuclide concentraions are calculated used
-% CronusCalc (Marrero, 2016). 
 % The script calculates the denudation rate for a single nuclide
-% measurement of a soluble or an insoluble target mineral. Despite, the
-% nuclide cooncentrations, the bedrock or soil chemistry is needed. This code
-% assumes that bedrock and soil only consist of the two target minerals and
-% another mineral that is assumed to be insoluble.
+% measurement of a soluble or an insoluble target mineral. 
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
 % with a Metropolis Hastings sampling alrogithm. 
@@ -23,49 +14,8 @@ clear
 close all
 addpath '.\subroutines'
 
-nuclide = '36Cl';      % '10Be' or '36Cl'
-test = 1; % Do you want to run this inversion with the test data set to explore functionality? (0-no, 1-yes)
-if test
-%     load 'singleCRN_test_data_input.mat'
-    [num,txt,~]    = xlsread('Test_Input.xlsx','36Cl Cronus');           % load CRN data
-    [Xdata,~,rawX] = xlsread('Test_Input.xlsx','Sample_comp_for_Matlab');  % load compositional data
-    W              = 50;  % weathering rate mm/ka
-    Wstd           = 5;   % uncert. weathering rate mm/ka
-    ind = 1;
-else  % load your data files
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Cosmo'
-addpath 'C:\Users\r_ott\Dropbox\Richard\NAGRA\Data\Water_CH'
-
-% User choice and load data --------------------------------------------- %
-scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~]    = xlsread('samples.xlsx','36Cl Cronus');                    % load CRN data
-[Xdata,~,rawX] = xlsread('samples.xlsx','Samp_comp_for_Matlab_Bedrock');  % load compositional data
-[Wdata,Wtxt,~] = xlsread('Weathering rates.xlsx');                         % load Weathering data
-
-
-soil_mass       = 80;         % average soil mass in g/cm²
-DEMdata.method  = 'location'; % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run ');
-W = Wdata(1,11)*1e3; Wstd = Wdata(1,12)*1e3;
-end
-
-if ind ~= 0
-    num = num(ind,:); txt = txt(ind,:);
-    
-    if isnan(rawX{ind+1,2})
-        X.fQzS = Xdata(ind,1); 
-        X.fCaS = Xdata(ind,2); 
-        X.fXS  = Xdata(ind,3);  
-        X.mode = 'soil';
-    else
-        X.fQzB = Xdata(ind,1); 
-        X.fCaB = Xdata(ind,2); 
-        X.fXB  = Xdata(ind,3);  
-        X.mode = 'bedrock';
-    end
-end
-
-switch nuclide; case '10Be'; n = 1; case '36Cl'; n = 2; end    
+% load data
+[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single2.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -84,10 +34,9 @@ end
 
 %% Calculate production rates ------------------------------------------- %
 
-% Calculate production rates
 Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
 
-pars = Cronus_prep{n}(num,scaling_model,DEMdata);
+pars = Cronus_prep{X.n}(num,scaling,DEMdata);
 
 %% Run MCMC inversion for "real" denudation rate ------------------------ %
 
@@ -95,7 +44,7 @@ pars = Cronus_prep{n}(num,scaling_model,DEMdata);
 D = [5,1e3];                           % Denudation min/max in mm/ka
 
 % run inversion
-[X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,W,X,soil_mass,n);
+[X,MAP,post] = singleCRN_MCMC(pars,scaling,D,X);
 
 
 %% OUTPUT RESULTS ------------------------------------------------------- %

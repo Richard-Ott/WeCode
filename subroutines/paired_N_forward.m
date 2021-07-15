@@ -1,4 +1,4 @@
-function [Ntot10, Ntot36, D_QzS, D_CaS] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,D,X)
+function [Ntot10, Ntot36, D, Ws] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,D,X)
 % This functions computes the average soil nuclide concentration in a soil
 % with differential weathering of 2 minerals (here assumed to be quartz and
 % calcite). 
@@ -34,9 +34,7 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * X.fQzS/X.fQzB;  
 Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;  
 
-
-D_QzS = D * X.fQzB/X.fQzS;
-D_CaS = D * X.fCaB/X.fCaS;
-
+Es = D * ((X.fQzB+X.fXB)/X.fCaB) * (X.fCaS/(X.fQzS+X.fXS));  % soil erosion
+Ws = D-Es;                                                   % soil weathering
 end
 

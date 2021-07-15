@@ -1,4 +1,4 @@
-function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling_model,D,X,soil_mass)
+function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling_model,D,X)
 % Calculates the the "real" landscape denudation rate from a paired nuclide
 % measurement and soil or bedrock chemistry data.
 % Inversion is perfomred with a MCMC.
@@ -6,6 +6,7 @@ function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling_model,D,X,soil_ma
 
 v2struct(pars10);
 v2struct(pars36);
+soil_mass = X.soil_mass;
 
 tic
 % ------------------------------------------------------------------- %
@@ -185,11 +186,7 @@ switch X.mode
         X.fCaS = 1 - MAP(1) - Xcur.fXS;
 end
 % take MAP solution and calculate soil erosion and soil denudation rate
-[~,~,Es,EsWs] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
-W = EsWs - Es;   % weathering rate of carbonate minerals should be the difference between soil erosion and soil denudation rate
-W = W * X.fCaS;      % the landscape weathering rate should then be the carbonate weathering rate * the carbonate concentration in the soil       
-% NEED TO THINK MORE IF THIS LAST STEP IS CORRECT!
-
+[~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
 
 end
 
