@@ -18,17 +18,16 @@
 clc
 clear 
 close all
-addpath 'C:\Users\r_ott\Dropbox\Richard\Crete\Cretan_fans\data'
-addpath 'C:\Users\r_ott\Dropbox\Richard\PhD_ETH\matlab\CRONUS cosmo calculation\cronusearth-2.0'
 addpath '.\subroutines'
 
 % User choice ----------------------------------------------------------- %
 nuclide = '10Be';      % nuclide of interest e.g. '10Be', '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~] = xlsread('10Be_data_CRONUS.xlsx',2);
+[num,txt,~] = xlsread('Test_Input_Single.xlsx',1);
 DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
-ind = input('Which of the samples would you like to run? ');
-if ind ~= 0
+
+if size(num,1) > 1
+    ind = input('Which of the samples would you like to run?');
     num = num(ind,:); txt = txt(ind,:);
 end
 
