@@ -49,11 +49,11 @@ err_max = Nobs*err/100;                    % in at/g for nuclides, here defined 
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-m0 = D(1)+rand*diff(D);                % create random parameters
-
-% the covariance matrix should be of the variance (sigma^2) rather than the
-% standard deviation (sigma)
-covariance_matrix = diag(ones(1,1).*uncerts(data_ind).^2);    % set up covariance matrix
+% m0 = D(1)+rand*diff(D);                % depending on what data you run
+% it may be a bit fast to cucomment this line and comment the two below.
+% The lines below start the MCMC from the conventional denudation rate.
+Dini = {@be10erateraw, @cl36erateraw};
+m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
@@ -85,6 +85,7 @@ it = 0;
 
 con = 1;
 up = 0;
+counter = 0;
 while con      % run this while loop until modelled values meet stopping criterion
     it = it+1;        
 
@@ -109,6 +110,10 @@ while con      % run this while loop until modelled values meet stopping criteri
                 Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
                 Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
                 Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;  
+                counter = counter+1;
+                if counter > 1e5
+                    error('cant find a decent sample')
+                end
             end
         case 'bedrock'
             R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;             % ratio of insoluble to soluble material
@@ -122,6 +127,10 @@ while con      % run this while loop until modelled values meet stopping criteri
                 Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
                 Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
                 Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
+                counter = counter+1;
+                if counter > 1e5
+                    error('cant find a decent sample')
+                end
             end
     end
     
@@ -170,6 +179,7 @@ while con      % run this while loop until modelled values meet stopping criteri
     else
         con = 1;                % if values too far off, keep going
     end
+    counter = 0;
     
 end
 toc

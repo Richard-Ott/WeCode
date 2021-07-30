@@ -11,10 +11,9 @@ soil_mass = X.soil_mass;
 tic
 % ------------------------------------------------------------------- %
 % set some constants
-pp = physpars();                          % get physical parameters 
+pp = physpars();                         % get physical parameters 
 sp10.depthtotop = soil_mass;             % set depth to soil bedrock interface
 sp36.depthtotop = soil_mass;             % set depth to soil bedrock interface
-soil_depths = 1:0.1:soil_mass; 
 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
@@ -23,7 +22,6 @@ Nobs = [nominal10(9);nominal36(1)];       % measured concentration
 dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nmax = 1e3;                            % maximum number of models
 k = 0.09;                              % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,32 +44,46 @@ err_max = Nobs/100;                    % in at/g for both nuclides, here defined
 
 nd = length(pnames);                   % number of dimensions
 
-
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 m0 = nan(nd,1);
 switch X.mode
     case 'soil'
-        m0(1) = fQzB(1)+rand*diff(fQzB);       % create random parameters
+        m0(1) = fQzB(1)+rand*range_in(1);       % create random parameters
     case 'bedrock'
-        m0(1) = fQzS(1)+rand*diff(fQzS);       % create random parameters
+        m0(1) = fQzS(1)+rand*range_in(1);       % create random parameters
 end
-m0(2) = D(1)+rand*diff(D);             % create random parameters
-
-% the covariance matrix should be of the variance (sigma^2) rather than the
-% standard deviation (sigma)
-covariance_matrix = diag(ones(2,1).*[uncerts10(9);uncerts36(1)].^2);    % set up covariance matrix
+spini = sp36; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
+m0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters earch at 36Cl rate (for a carbonate composition this should be closer to the reeal denudation)
+% m0(2) = D(1)+rand*diff(D);             % create random parameters
 
 % Run initial forward model -----------------------------------------------
+counter =0;
 Xcur  = X;
 switch X.mode
     case 'soil'
         Xcur.fQzB = m0(1); 
         Xcur.fXB  = X.fXS * (m0(1)/X.fQzS);    % the other insoluble mineral should behave like quartz
         Xcur.fCaB = 1 - m0(1) - Xcur.fXB;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
+        while any([m0 < [fQzB(1);D(1)] ; m0 > [fQzB(2);D(2)]; sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001;any([Xcur.fQzB,Xcur.fXB,Xcur.fCaB]<0) ])
+            m0(1) = fQzB(1) + rand(1)*range_in(1);
+            Xcur.fQzB = m0(1); 
+            Xcur.fXB  = X.fXS * (m0(1)/X.fQzS);
+            Xcur.fCaB = 1 - m0(1) - Xcur.fXB; 
+        end
     case 'bedrock'
         Xcur.fQzS = m0(1); 
         Xcur.fXS  = X.fXB * (m0(1)/X.fQzB);    % the other insoluble mineral should behave like quartz
         Xcur.fCaS = 1 - m0(1) - Xcur.fXS;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
+        while any([m0 < [fQzS(1);D(1)] ; m0 > [fQzS(2);D(2)]; sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001; any([Xcur.fQzS,Xcur.fXS,Xcur.fCaS]<0)])
+            m0(1) = fQzS(1) + rand(1)*range_in(1);
+            Xcur.fQzS = m0(1); 
+            Xcur.fXS  = X.fXB * (m0(1)/X.fQzB);
+            Xcur.fCaS = 1 - m0(1) - Xcur.fXS;
+            counter = counter+1;
+            if counter > 1e5
+                error('cant find a decent sample')
+            end
+        end
 end
 
 [N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,m0(2),Xcur);
@@ -81,17 +93,14 @@ ln_prob_cur = ln_like_cur + log(pprior_cur);                % ln probability mod
 
 % MAIN LOOP OF INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 current = m0;
-% post = nan(n,length(current)+1);
 nacc = 0;
-count = 0;
 it = 0; 
-
+counter = 0;
 con = 1;
 while con      % run this while loop until modelled values meet stopping criterion
     it = it+1;        
 
     % make new random parameters
-%     candidate = current + randn(2,1).*stds;
     candidate = current + randn(nd,1).* k .*range_in;
     
     switch X.mode
@@ -105,6 +114,10 @@ while con      % run this while loop until modelled values meet stopping criteri
                 Xcur.fQzB = candidate(1); 
                 Xcur.fXB  = X.fXS * (candidate(1)/X.fQzS);
                 Xcur.fCaB = 1 - candidate(1) - Xcur.fXB; 
+                counter = counter+1;
+                if counter > 1e5
+                    error('cant find a decent sample')
+                end
             end
         case 'bedrock'
             Xcur.fQzS = candidate(1); 
@@ -120,7 +133,6 @@ while con      % run this while loop until modelled values meet stopping criteri
                 if counter > 1e5
                     error('cant find a decent sample')
                 end
-                    
             end
     end
 
@@ -171,6 +183,7 @@ while con      % run this while loop until modelled values meet stopping criteri
         con = 1;                          % if values too far off, keep going
     end
     
+    counter = 0;
 end
 toc
 
@@ -188,5 +201,9 @@ end
 % take MAP solution and calculate soil erosion and soil denudation rate
 [~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
 
+% convert denudation rates back to mm/ka
+MAP = MAP/sp10.rb*10;
+post(:,1) = post(:,1) ./sp10.rb .*10;
+W = W/sp10.rb*10;
 end
 

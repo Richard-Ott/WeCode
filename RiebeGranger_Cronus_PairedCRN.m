@@ -60,7 +60,7 @@ subplot(1,3,3); plot(post(:,3))
 xlabel('iteration'); ylabel('log posterior probability')
 
 % Report the values
-disp(['Denudation rate = ' num2str(MAP(2)/pars10.sp10.rb*10) ' mm/ka'])
+disp(['Denudation rate = ' num2str(round(MAP(2))) ' mm/ka'])
 switch X.mode
     case 'soil'
         disp(['Fraction of quartz in bedrock fQzB = ' num2str(X.fQzB)])
@@ -71,11 +71,11 @@ switch X.mode
         disp(['Fraction of X in soil fXS = ' num2str(X.fXS)])
         disp(['Fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
 end
-disp(['The calculated weathering rate = ' num2str(W/pars10.sp10.rb*10) ' mm/ka'])
+disp(['The calculated weathering rate = ' num2str(round(W)) ' mm/ka'])
 
 export = input('Do you want to export your results? "y" or "n"? ','s');
 if strcmpi(export,'y')
     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W/pars10.sp10.rb*10,MAP(2)/pars10.sp10.rb*10 ,'VariableNames',vars);
+    out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP(2),'VariableNames',vars);
     writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '_' X.mode '.xlsx'])
 end
