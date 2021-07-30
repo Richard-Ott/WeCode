@@ -15,7 +15,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single2.xlsx');
+[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -42,37 +42,36 @@ pars = Cronus_prep{X.n}(num,scaling,DEMdata);
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = [5,1e3];                           % Denudation min/max in mm/ka
+thres = 0.1;                             % threshold of nuclide concentratio error at which inversion has converged in %
 
 % run inversion
-[X,MAP,post] = singleCRN_MCMC(pars,scaling,D,X);
-
+[X,MAP,post] = singleCRN_MCMC(pars,scaling,D,X,thres);
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
-try rho = pars.sp10.rb;  catch rho = pars.sp36.rb; end
 
-% plot the MCMC chains 
+% % plot the MCMC chains 
 figure()
 subplot(1,2,1); plot(post(:,1))
-xlabel('iteration'); ylabel('Denudation rate g/cm²/ka'); ylim(D)
+xlabel('iteration'); ylabel('Denudation rate mm/ka'); ylim(D)
 subplot(1,2,2); plot(post(:,2))
 xlabel('iteration'); ylabel('log posterior probability')
 
 % Report the values
-disp(['Denudation rate = ' num2str(MAP/rho*10) ' mm/ka'])
+disp(['Denudation rate = ' num2str(round(MAP))  ' mm/ka'])
 switch X.mode
     case 'soil'
         disp(['Fraction of quartz in bedrock fQzB = ' num2str(X.fQzB)])
         disp(['Fraction of X in bedrock fXB = ' num2str(X.fXB)])  
         disp(['Fraction of calcite in bedrock fCaB = ' num2str(X.fCaB)])        
     case 'bedrock'
-        disp(['Fraction of quartz in soil fQzS = ' num2str(X.fQzS)])
+        disp(['Fraction of quartz in soil fQzS = ' num2str(X.fQzS) ])
         disp(['Fraction of X in soil fXS = ' num2str(X.fXS)])
         disp(['Fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
 end
-
-export = input('Do you want to export your results? "y" or "n"? ','s');
-if strcmpi(export,'y')
-    vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP/rho*10 ,'VariableNames',vars);
-    writetable(out_table,[ '.\output\JO\36Cl\' txt{1} '_' X.mode '.xlsx'])
-end
+% 
+% export = input('Do you want to export your results? "y" or "n"? ','s');
+% if strcmpi(export,'y')
+%     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
+%     out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP/rho*10 ,'VariableNames',vars);
+%     writetable(out_table,[ '.\output\JO\36Cl\' txt{1} '_' X.mode '.xlsx'])
+% end

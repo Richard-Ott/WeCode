@@ -1,4 +1,4 @@
-function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,X)
+function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,X,err)
 % Calculates the "real" denudation rate from a nuclide measurement, the
 % bedrock or soil chemistry and a weathering rate.
 % The solution is found through a MCMC algorithm.
@@ -6,6 +6,7 @@ function [X,MAP,post] = singleCRN_MCMC(pars,scaling_model,D,X)
 
 v2struct(pars)   % unpack variables in parameters structure
 W = X.W;
+Wstd = X.Wstd;
 soil_mass = X.soil_mass;
 n = X.n;
 
@@ -24,7 +25,6 @@ tic
 % set some constants
 pp = physpars();
 sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
-soil_depths = 1:0.1:soil_mass; 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
 maxage=500;                            % 2000ka should be saturated for 36Cl. By trial and error I found that 500 does only ~0.5% diff in the result but doubles the speed
@@ -33,19 +33,19 @@ Nobs = nominal(data_ind);              % measured concentration
 dNobs =uncerts(data_ind);              % uncertainty of observation
         
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nmax = 1e3;                            % maximum number of models
 k = 0.04;                              % universal step size tuned to parameter range
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
 W = W/10*sp.rb;                        % convert to g/cm²/ka 
+Wstd = Wstd/10*sp.rb;                  % convert to g/cm²/ka 
 pprior_cur = 0;                        % only flat priors 
 
 pnames = {'D'};
 range_in = diff(D);                    % ranges of parameters
 
 % Resolution, under which parameters resolution does stop the model
-err_max = Nobs/100;                    % in at/g for nuclides, here defined to be 1% of N
+err_max = Nobs*err/100;                    % in at/g for nuclides, here defined to be 1% of N
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,15 +81,18 @@ ln_prob_cur = ln_like_cur + log(pprior_cur);       % ln probability model
 % MAIN LOOP OF INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 current = m0;
 nacc = 0;
-count = 0;
 it = 0; 
 
 con = 1;
+up = 0;
 while con      % run this while loop until modelled values meet stopping criterion
     it = it+1;        
 
     % make new random parameters ------------------------------------------
     candidate = current + randn(nd,1).* k .*range_in;
+    while up == 1 && (candidate < current)   % if the last accepted denudation rate resulted in too high concentration we have to further increase denudation
+        candidate = current + randn(nd,1).* k .*range_in;   % this loops saves us from calculting some useless forward models
+    end
     
     fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
     switch X.mode
@@ -150,6 +153,7 @@ while con      % run this while loop until modelled values meet stopping criteri
         pprior_cur = pprior_cand;
         nacc = nacc + 1;
         post(nacc,:) = [candidate; ln_like_cand+pprior_cand];
+        if obs_err > 0; up = 1; else up = 0; end   % we know if the modelled N was to high we have to increase denudation rate
         disp(it)
         if ln_like_cand+pprior_cand > -1
             k = 0.01;
@@ -170,6 +174,12 @@ while con      % run this while loop until modelled values meet stopping criteri
 end
 toc
 
+%save final composition
 X = Xcur;
+
+% convert denudation rates back to mm/ka
+MAP = MAP/sp.rb*10;
+post(:,1) = post(:,1) ./sp.rb .*10;
+
 end
 
