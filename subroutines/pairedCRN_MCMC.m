@@ -202,8 +202,11 @@ end
 [~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
 
 % convert denudation rates back to mm/ka
-MAP = MAP/sp10.rb*10;
+MAP(2) = MAP(2)/sp10.rb*10;
 post(:,1) = post(:,1) ./sp10.rb .*10;
 W = W/sp10.rb*10;
+
+%save final composition
+X = Xcur;
 end
 
