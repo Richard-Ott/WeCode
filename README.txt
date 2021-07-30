@@ -9,7 +9,9 @@ Matlab search path. If you want to run the code with alluvial basin data, you al
 TopoToolbox in your Matlab search path.
 
 Example input files are provided for all scripts, inlcuding test data that you can use to
-run the code.
+run the code. Test_Input_Single provide input for a single nuclide measurement with a weathering 
+rate. Test_Input_Single - >10Be, Test_Input_Single2 -> 36Cl
+Test_input_Paired is for running the paired nuclide inversion with bedrock composition data.
 
 - RiebeGranger_Cronus_CarbBias: This script plots the bias in denudation rate measurements due to
 enrichment/depletion of minerals for different soil depths. 
