@@ -8,7 +8,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single2.xlsx');
+[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 

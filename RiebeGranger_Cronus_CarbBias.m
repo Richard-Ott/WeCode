@@ -26,11 +26,6 @@ scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
 [num,txt,~] = xlsread('Test_Input_Single.xlsx',1);
 DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 
-if size(num,1) > 1
-    ind = input('Which of the samples would you like to run?');
-    num = num(ind,:); txt = txt(ind,:);
-end
-
 %% assign data and initial basin calculations --------------------------- %
 
 % in case your denudation rate is from an alluvial sample and you desire a

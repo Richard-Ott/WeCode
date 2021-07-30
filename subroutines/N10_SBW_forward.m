@@ -5,7 +5,7 @@ function Ntot10 = N10_SBW_forward(pars,scaling_model,soil_mass,D,W)
 % Richard Ott, 2021
 
 v2struct(pars)
-W = W/10*sp36.rb;
+W = W/10*sp10.rb;
 
 % set current denudation rate
 sp10.epsilon = D;  
