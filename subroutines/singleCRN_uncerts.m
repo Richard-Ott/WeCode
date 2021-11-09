@@ -1,7 +1,4 @@
 function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,scaling,D,X,MAP,thres)
-% Calculates the "real" denudation rate from a nuclide measurement, the
-% bedrock or soil chemistry and a weathering rate.
-% The solution is found through a MCMC algorithm.
 % Richard Ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
@@ -15,10 +12,10 @@ for i=1:2
     parsC = pars;
     if i == 1
         if X.n == 1
-            thisdelta=0.1*pars.nominal10(9);
+            thisdelta=0.01*pars.nominal10(9);
             parsC.nominal10(9) = pars.nominal10(9) +  thisdelta;
             parsC.sp10.concentration10 = parsC.nominal10(9);
-            parsC.cp10.N36m = parsC.nominal10(9);
+            parsC.cp10.N10m = parsC.nominal10(9);
         elseif X.n == 2
             thisdelta=0.1*pars.nominal36(1);
             parsC.nominal36(1) = pars.nominal36(1) +  thisdelta;
@@ -26,7 +23,7 @@ for i=1:2
             parsC.cp36.N36m = parsC.nominal36(1);
         end
     else
-      thisdelta=0.1*X.W;
+      thisdelta=0.01*X.W;
     end
     
     % run inversion, try to start close to final value to speed up
@@ -63,7 +60,7 @@ for i=1:2
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% PRODUCTION UNCERTAINTY
+%% PRODUCTION UNCERTAINTY (only spallation)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 deltapp = pars.pp;

@@ -25,7 +25,7 @@ dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 k = 0.09;                              % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = D/10*sp10.rb;                      % convert to g/cmÂ²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
+D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
 pprior_cur = 0;                        % only flat priors 
 
 switch X.mode
