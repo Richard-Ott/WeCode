@@ -1,4 +1,4 @@
-function pars36 = Cronus_prep36(num,scaling_model,DEMdata)
+function pars36 = Cronus_prep36(num,DEMdata)
 % This function computes the basic structures needed for CronucsCalc
 % calculations
 % This function includes the max_erate_guess which should sometimes needs
@@ -6,11 +6,12 @@ function pars36 = Cronus_prep36(num,scaling_model,DEMdata)
 
 % Input: 
 %           - num, the data as dervied from the Cronus input sheet
-%           - scaling model, e.g. 'st'
 %           - DEMdata, do you use a DEM for a pixel-based productoin rate?
 %           0 or 1
 %           - if DEMdata == 1, then provide DEM, DB and utmzone of the DEM
 % Richard Ott, 2021
+
+global scaling_model
 
 pp=physpars();                               % get physical parameters
 

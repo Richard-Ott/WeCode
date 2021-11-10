@@ -1,9 +1,10 @@
-function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling_model,D,X)
+function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,D,X)
 % Calculates the the "real" landscape denudation rate from a paired nuclide
 % measurement and soil or bedrock chemistry data.
 % Inversion is perfomred with a MCMC.
 % Richard Ott, 2021
 
+global scaling_model
 v2struct(pars10);
 v2struct(pars36);
 soil_mass = X.soil_mass;
@@ -25,7 +26,7 @@ dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 k = 0.09;                              % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
+D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus
 pprior_cur = 0;                        % only flat priors 
 
 switch X.mode

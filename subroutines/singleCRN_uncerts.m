@@ -1,4 +1,4 @@
-function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,scaling,D,X,MAP,thres)
+function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,scaling_model,D,X,MAP,thres)
 % Richard Ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
@@ -29,9 +29,9 @@ for i=1:2
     % run inversion, try to start close to final value to speed up
     % inversion
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling_model,D,X,thres);
     end
     
     deratei=(deltaerate - MAP)/(thisdelta);
@@ -69,9 +69,9 @@ if X.n == 1
     % run inversion, try to start close to final value to speed up
     % inversion
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,D,X,thres);
     end
     deratepsBe  =(deltaerate-MAP)/(0.1*abs(pars.pp.PsBe));
     % compositional uncert
@@ -87,9 +87,9 @@ if X.n == 1
 elseif X.n == 2
     deltapp.PsCa= pars.pp.PsCa0+0.1*abs(pars.pp.PsCa0);
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,D,X,thres);
     end
     
     % compositional uncert

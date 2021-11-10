@@ -1,4 +1,4 @@
-function [num,sampName,X,DEMdata,scaling] = CosmoDataRead(filename,varargin)
+function [num,sampName,X,DEMdata] = CosmoDataRead(filename,varargin)
 
 [~,sheets] = xlsfinfo(filename);
 
@@ -39,7 +39,8 @@ end
 Xdata = Xdata(ind,:);                                                    % select sample data
 DEMdata.method = Xtxt{ind+1,10};
 X.soil_mass    = Xdata(7);
-scaling        = Xtxt{ind+1,9};       
+global scaling_model
+scaling_model  = Xtxt{ind+1,9};       
 
 
 if isnan(Xdata(2))

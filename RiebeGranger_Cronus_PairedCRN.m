@@ -14,7 +14,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Paired.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Paired.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -33,8 +33,8 @@ end
 
 %% Calculate production rates ------------------------------------------- %
 
-pars10 = Cronus_prep10(num.num10,scaling,DEMdata);
-pars36 = Cronus_prep36(num.num36,scaling,DEMdata);
+pars10 = Cronus_prep10(num.num10,DEMdata);
+pars36 = Cronus_prep36(num.num36,DEMdata);
 
 
 %% Run MCMC inversion for "real" denudation rate and weathering rate ---- %
@@ -45,7 +45,7 @@ D = [5,1e3];                           % Denudation min/max in mm/ka
 % automatically set to fractions between 0 and 1 in the MCMC function.
 
 % run inversion
-[X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,scaling,D,X);
+[X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,D,X);
 
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
