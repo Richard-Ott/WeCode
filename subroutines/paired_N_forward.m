@@ -34,7 +34,7 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * X.fQzS/X.fQzB;  
 Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;  
 
-Es = D * ((X.fQzB+X.fXB)/X.fCaB) * (X.fCaS/(X.fQzS+X.fXS));  % soil erosion
-Ws = D-Es;                                                   % soil weathering
+Es = X.fQzB/X.fQzS * D;  % soil erosion
+Ws = D-Es;               % soil weathering
 end
 

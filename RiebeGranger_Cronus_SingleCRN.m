@@ -15,7 +15,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single2.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -41,7 +41,7 @@ pars = Cronus_prep{X.n}(num,DEMdata);
 %% Run MCMC inversion for "real" denudation rate ------------------------ %
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = [5,1e3];                           % Denudation min/max in mm/ka
+D = [50,1e3];                          % Denudation min/max in mm/ka (Dmin should be > Weathering rate)
 thres = 0.1;                           % threshold of nuclide concentratio error at which inversion has converged in %
 
 % run inversion

@@ -7,7 +7,6 @@ function [X,MAP,post] = singleCRN_MCMC(pars,D,X,err)
 global scaling_model
 v2struct(pars)   % unpack variables in parameters structure
 W = X.W;
-Wstd = X.Wstd;
 soil_mass = X.soil_mass;
 n = X.n;
 
@@ -39,36 +38,33 @@ k = 0.04;                              % universal step size tuned to parameter 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
 W = W/10*sp.rb;                        % convert to g/cm²/ka 
-Wstd = Wstd/10*sp.rb;                  % convert to g/cm²/ka 
 pprior_cur = 0;                        % only flat priors 
 
 pnames = {'D'};
 range_in = diff(D);                    % ranges of parameters
 
 % Resolution, under which parameters resolution does stop the model
-err_max = Nobs*err/100;                    % in at/g for nuclides, here defined to be 1% of N
+err_max = Nobs*err/100;                % in at/g for nuclides, here defined to be 1% of N
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% m0 = D(1)+rand*diff(D);                % depending on what data you run
+m0 = D(1)+rand*diff(D);                % depending on what data you run
 % it may be a bit fast to cucomment this line and comment the two below.
 % The lines below start the MCMC from the conventional denudation rate.
-Dini = {@be10erateraw, @cl36erateraw};
-m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
+% Dini = {@be10erateraw, @cl36erateraw};
+% m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
-fE = 1 - W/m0;                          % fraciotn of erosion (to total denudation)
+fE = 1 - W/m0;                          % fraction of erosion (to total denudation)
 switch X.mode
     case 'soil'
-        R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;     % ratio of insoluble to soluble material
-        Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
-        Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
+        Xcur.fQzB = Xcur.fQzS * fE;           % quartz fraction 
+        Xcur.fXB  = Xcur.fXS  * fE;           % clay fraction
         Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;
     case 'bedrock'
-        R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;     % ratio of insoluble to soluble material
-        Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
-        Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
+        Xcur.fQzS = Xcur.fQzB * (1/fE);
+        Xcur.fXS  = Xcur.fXB  * (1/fE); 
         Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
 end
 
@@ -90,8 +86,11 @@ counter = 0;
 while con      % run this while loop until modelled values meet stopping criterion
     it = it+1;        
 
-    % make new random parameters ------------------------------------------
+    % sample new random parameter ------------------------------------------
     candidate = current + randn(nd,1).* k .*range_in;
+    while candidate < D(1) || candidate > D(2)        % Makere su sample is within bounds of denudation rate
+        candidate = current + randn(nd,1).* k .*range_in;
+    end
     while up == 1 && (candidate < current)   % if the last accepted denudation rate resulted in too high concentration we have to further increase denudation
         candidate = current + randn(nd,1).* k .*range_in;   % this loops saves us from calculting some useless forward models
     end
@@ -99,34 +98,30 @@ while con      % run this while loop until modelled values meet stopping criteri
     fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
     switch X.mode
         case 'soil'
-            R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;             % ratio of insoluble to soluble material
-            Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
-            Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
-            Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;  
+            Xcur.fQzB = Xcur.fQzS * fE;           % quartz fraction 
+            Xcur.fXB  = Xcur.fXS  * fE;           % clay fraction
+            Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;
             % if random parameters are outside of prior range get a new candidate
             while any([candidate < D(1) ; candidate > D(2); sum(Xcur.fQzB+Xcur.fCaB+Xcur.fXB) > 1.001;any([Xcur.fQzB,Xcur.fXB,Xcur.fCaB]<0) ])
                 candidate = current + randn(nd,1).* k .*range_in;
-                fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
-                R  = (Xcur.fQzS + Xcur.fXS)/Xcur.fCaS;         % ratio of insoluble to soluble material
-                Xcur.fQzB = (R*fE) / (1+ R*fE + R*fE*(X.fXS/X.fQzS) + X.fXS/X.fQzS); 
-                Xcur.fXB  = Xcur.fQzB* (X.fXS/X.fQzS);  
-                Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;  
+                fE = 1 - W/candidate;                             % fraction of erosion (to total denudation)
+                Xcur.fQzB = Xcur.fQzS * fE;           % quartz fraction 
+                Xcur.fXB  = Xcur.fXS  * fE;           % clay fraction
+                Xcur.fCaB = 1 - Xcur.fQzB - Xcur.fXB;
                 counter = counter+1;
                 if counter > 1e5
                     error('cant find a decent sample')
                 end
             end
         case 'bedrock'
-            R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;             % ratio of insoluble to soluble material
-            Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
-            Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
+            Xcur.fQzS = Xcur.fQzB * (1/fE);
+            Xcur.fXS  = Xcur.fXB  * (1/fE); 
             Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
             while any([candidate < D(1); candidate > D(2); sum(Xcur.fQzS+Xcur.fCaS+Xcur.fXS) > 1.001;any([Xcur.fQzS,Xcur.fXS,Xcur.fCaS]<0)])
                 candidate = current + randn(nd,1).* k .*range_in;
-                fE = 1 - W/candidate;                          % fraciotn of erosion (to total denudation)
-                R  = (Xcur.fQzB + Xcur.fXB)/Xcur.fCaB;         % ratio of insoluble to soluble material
-                Xcur.fQzS = (R/fE) / (1+ R/fE + R/fE*(X.fXB/X.fQzB) + X.fXB/X.fQzB); 
-                Xcur.fXS  = Xcur.fQzS* (X.fXB/X.fQzB);  
+                fE = 1 - W/candidate;                          % fraction of erosion (to total denudation)
+                Xcur.fQzS = Xcur.fQzB * (1/fE);
+                Xcur.fXS  = Xcur.fXB  * (1/fE); 
                 Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
                 counter = counter+1;
                 if counter > 1e5
@@ -135,7 +130,6 @@ while con      % run this while loop until modelled values meet stopping criteri
             end
     end
     
-
     % calculate logpriors for unifrom distribution
     pprior_cand = 0;   % we're using uniform priors
 
