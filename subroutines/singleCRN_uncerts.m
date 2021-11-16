@@ -1,7 +1,8 @@
-function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,scaling_model,D,X,MAP,thres)
+function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,MAP,thres)
 % Richard Ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
+global scaling_model
 
 %% NUCLIDE CONCENTRATION AND WEATHERING UNCERTAINTY
 % only uncertainties from nuclide concentration and weathering rate are

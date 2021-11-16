@@ -1,4 +1,4 @@
-% The script calculates the denudation rate for a single nuclide
+% The script shows how to calculate the denudation rate from a single nuclide
 % measurement of a soluble or an insoluble target mineral. 
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
@@ -15,12 +15,13 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single2.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
 % in case your denudation rate is from an alluvial sample and you desire a
 % pixel-by-pixel calculated production rate provide a DEM
+% THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
     DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
@@ -41,19 +42,22 @@ pars = Cronus_prep{X.n}(num,DEMdata);
 %% Run MCMC inversion for "real" denudation rate ------------------------ %
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = [50,1e3];                          % Denudation min/max in mm/ka (Dmin should be > Weathering rate)
-thres = 0.1;                           % threshold of nuclide concentratio error at which inversion has converged in %
+D = [50,1e3];                          % Denudation min/max in mm/ka (Dmin > Weathering rate)
+thres = 0.1;                           % threshold of nuclide concentration error at which inversion has converged in % of N
 
 % run inversion
 [X,MAP,post] = singleCRN_MCMC(pars,D,X,thres);
+
+% estimate uncertainty
+% [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,MAP,thres);
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
 
 % % plot the MCMC chains 
 figure()
-subplot(1,2,1); plot(post(:,1))
-xlabel('iteration'); ylabel('Denudation rate mm/ka'); ylim(D)
-subplot(1,2,2); plot(post(:,2))
+subplot(1,2,1); plot(post(:,1),'LineWidth',1.5)
+xlabel('iteration'); ylabel('Denudation rate mm/ka'); ylim(D);
+subplot(1,2,2); plot(post(:,2),'LineWidth',1.5)
 xlabel('iteration'); ylabel('log posterior probability')
 
 % Report the values

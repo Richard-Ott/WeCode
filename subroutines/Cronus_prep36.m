@@ -9,6 +9,13 @@ function pars36 = Cronus_prep36(num,DEMdata)
 %           - DEMdata, do you use a DEM for a pixel-based productoin rate?
 %           0 or 1
 %           - if DEMdata == 1, then provide DEM, DB and utmzone of the DEM
+%
+% Note that I decreased some of the sfatey factors for the depth
+% integration compared to the original Cronus calculator. For most
+% denudation rates this will be ok. But if you run into errors or weird
+% output, check the max_age and max_depth parameters of the depth
+% integration. 
+%
 % Richard Ott, 2021
 
 global scaling_model
@@ -54,28 +61,29 @@ else
 end
 % We need an absolute maximum age for several purposes, including
 % detecting saturated samples and setting the maximum depth for comppars.
-maxage=500;                             % It'll be saturated after 2Ma
+maxage10=500;                             % It'll be saturated after 2Ma, decreased safety factor from original Cronus too increase speed without introducing too much bias
 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  This is depthtotop + maxage * erosion (g/cm2/kyr) +
 % thickness * density + a safety factor. 
 max_erate_guess = 400;     % maximum guess of erosion rate in area in mm/ka
-maxdepth = maxage*max_erate_guess+sp.ls*sp.rb+1000; 
+maxdepth10 = maxage10*max_erate_guess+sp.ls*sp.rb+1000; 
 
 % Computed parameters.
-cp=comppars36(pp,sp,sf,maxdepth);
+cp=comppars36(pp,sp,sf,maxdepth10);
 
 % the denudation rate 
 % erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
 %         eratemm=erate_raw/sp.rb*10;
 
+% save all the parameters
 pars36.nominal36   = nominal36;
 pars36.uncerts36   = uncerts36;
 pars36.sp36        = sp;
 pars36.sf36        = sf;
 pars36.cp36        = cp;
-pars36.maxage      = maxage;
-pars36.maxdepth    = maxdepth;
+pars36.maxage36      = maxage10;
+pars36.maxdepth36    = maxdepth10;
 % pars36.erate_raw36 = erate_raw;
 pars36.pp          = pp;
 

@@ -1,5 +1,5 @@
-% The script calculates the denudation rate for a paired nuclide
-% measurement of a soluble and an insoluble target mineral. 
+% This in an example script on how to calculate the denudation rate for a 
+% paired nuclide measurement of a soluble and an insoluble target mineral. 
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
 % with a Metropolis Hastings sampling alrogithm. 
@@ -20,6 +20,7 @@ addpath '.\subroutines'
 
 % in case your denudation rate is from an alluvial sample and you desire a
 % pixel-by-pixel calculated production rate provide a DEM
+% THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();      % interactively choose the DEM that encompasses the basin
     DEMdata.export = 1;           % do you want to save the individual sample scaling factors as .mat file?
@@ -52,11 +53,11 @@ D = [5,1e3];                           % Denudation min/max in mm/ka
 
 % plot the MCMC chains 
 figure()
-subplot(1,3,1); plot(post(:,1))
+subplot(1,3,1); plot(post(:,1),'LineWidth',1.5)
 xlabel('iteration'); ylabel('fraction Qz'); ylim([0,1])
-subplot(1,3,2); plot(post(:,2))
-xlabel('iteration'); ylabel('Denudation rate g/cm²/ka'); ylim(D)
-subplot(1,3,3); plot(post(:,3))
+subplot(1,3,2); plot(post(:,2),'LineWidth',1.5)
+xlabel('iteration'); ylabel('Denudation rate mm/ka'); ylim(D)
+subplot(1,3,3); plot(post(:,3),'LineWidth',1.5)
 xlabel('iteration'); ylabel('log posterior probability')
 
 % Report the values
@@ -73,9 +74,9 @@ switch X.mode
 end
 disp(['The calculated weathering rate = ' num2str(round(W)) ' mm/ka'])
 
-export = input('Do you want to export your results? "y" or "n"? ','s');
-if strcmpi(export,'y')
-    vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-    out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP(2),'VariableNames',vars);
-    writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '_' X.mode '.xlsx'])
-end
+% export = input('Do you want to export your results? "y" or "n"? ','s');
+% if strcmpi(export,'y')
+%     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
+%     out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP(2),'VariableNames',vars);
+%     writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '_' X.mode '.xlsx'])
+% end

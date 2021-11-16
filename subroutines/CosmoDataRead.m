@@ -1,4 +1,8 @@
 function [num,sampName,X,DEMdata] = CosmoDataRead(filename,varargin)
+% Read the information from the excel sheets. 
+% If you have several samples in your input sheet provide the number of the 
+% sample you want to run as second input argument.
+% E.g. CosmoDataRead(filename,2)
 
 [~,sheets] = xlsfinfo(filename);
 
@@ -8,7 +12,7 @@ else
     ind  = 1;
 end
 
-nuclide_sheet = ~cellfun(@isempty,strfind(sheets, 'Cronus'));    % find the excel sheet that have nuclide information
+nuclide_sheet = ~cellfun(@isempty,strfind(sheets, 'Cronus'));    % find the excel sheet that has the nuclide information
 
 switch length(sheets)
     case 2           % single CRN plus Weathering

@@ -18,7 +18,6 @@ sp36.depthtotop = soil_mass;             % set depth to soil bedrock interface
 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
-maxage=500;                               % 2000ka should be saturated for 36Cl. By trial and error I found that 500 does only ~0.5% diff in the result but doubles the speed
 Nobs = [nominal10(9);nominal36(1)];       % measured concentration
 dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
@@ -27,7 +26,7 @@ k = 0.09;                              % universal step size tuned to parameter 
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus
-pprior_cur = 0;                        % only flat priors 
+ln_pprior_cur = 0;                        % only flat priors 
 
 switch X.mode
     case 'soil'
@@ -36,7 +35,7 @@ switch X.mode
         range_in = [diff(fQzB);diff(D)];       % ranges of parameters
     case 'bedrock'
         pnames = {'fQzS','D'};                 % names of parameters 
-        fQzS = [0,1];                          % fraction of quartz in soil
+        fQzS = [0,1-X.fXB];                    % fraction of quartz in soil
         range_in = [diff(fQzS);diff(D)];       % ranges of parameters
 end
 
@@ -54,8 +53,8 @@ switch X.mode
         m0(1) = fQzS(1)+rand*range_in(1);       % create random parameters
 end
 spini = sp36; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
-m0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters earch at 36Cl rate (for a carbonate composition this should be closer to the reeal denudation)
-% m0(2) = D(1)+rand*diff(D);             % create random parameters
+m0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters earch at 36Cl rate (for a carbonate composition this should be closer to the real denudation rate)
+% m0(2) = D(1)+rand*diff(D);             % create random parameters, you
 
 % Run initial forward model -----------------------------------------------
 counter =0;
@@ -87,10 +86,10 @@ switch X.mode
         end
 end
 
-[N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,m0(2),Xcur);
+[N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,m0(2),Xcur);
 obs_err     = [N10m,N36m]' - Nobs;                          % observational error
 ln_like_cur = (-1/2)*sum((obs_err./dNobs).^2);              % ln likelihood of model
-ln_prob_cur = ln_like_cur + log(pprior_cur);                % ln probability model
+ln_prob_cur = ln_like_cur + ln_pprior_cur;                  % ln probability model
 
 % MAIN LOOP OF INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 current = m0;
@@ -139,18 +138,18 @@ while con      % run this while loop until modelled values meet stopping criteri
 
     
     % calculate logpriors for unifrom distribution
-    pprior_cand = 0;   % we're using uniform priors
+    ln_pprior_cand = 0;   % we're using uniform priors
 
     % new forward model ------------------------------------------------- %
 
     
-    [N10m,N36m,~,~] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,candidate(2),Xcur);
+    [N10m,N36m,~,~] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,candidate(2),Xcur);
     obs_err     = [N10m,N36m]' - Nobs;                          % observational error
     ln_like_cand = (-1/2)*sum((obs_err./dNobs).^2);             % ln likelihood of model    
     lr1 = (-1/2)*sum((candidate-current).^2./(k .*range_in).^2);
     lr2 = (-1/2)*sum((current-candidate).^2./(k .*range_in).^2);
     
-    ln_alpha = ln_like_cand + pprior_cand +lr1 - pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
+    ln_alpha = ln_like_cand + ln_pprior_cand +lr1 - ln_pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
     
     if (ln_alpha > 0)
         ln_alpha = 0;
@@ -164,11 +163,11 @@ while con      % run this while loop until modelled values meet stopping criteri
         % Accept the step.
         current = candidate;
         ln_like_cur = ln_like_cand;
-        pprior_cur = pprior_cand;
+        ln_pprior_cur = ln_pprior_cand;
         nacc = nacc + 1;
-        post(nacc,:) = [candidate; ln_like_cand+pprior_cand];
+        post(nacc,:) = [candidate; ln_like_cand+ln_pprior_cand];
         disp(it)
-        if ln_like_cand+pprior_cand > -1
+        if ln_like_cand+ln_pprior_cand > -1 % if the algorithm gets close to the solution, reduce step size
             k = 0.01;
         elseif nacc > 350
             disp('It seems like the algorithm has problems converging and will terminate now')
@@ -200,11 +199,11 @@ switch X.mode
         X.fCaS = 1 - MAP(1) - Xcur.fXS;
 end
 % take MAP solution and calculate soil erosion and soil denudation rate
-[~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage,scaling_model,soil_mass,MAP(2),Xcur);
+[~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,MAP(2),Xcur);
 
-% convert denudation rates back to mm/ka
+% convert denudation rates from g/cm2/ka to mm/ka
 MAP(2) = MAP(2)/sp10.rb*10;
-post(:,1) = post(:,1) ./sp10.rb .*10;
+post(:,2) = post(:,2) ./sp10.rb .*10;
 W = W/sp10.rb*10;
 
 %save final composition

@@ -13,11 +13,11 @@ n = X.n;
 % I have to put this ugly if-else-statement here to rename the variables
 % otherwise I'd need to define new parameter calculation funtions...
 if exist('sp10')
-    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10;
-    clear nominal10 uncerts10 sp10 sf10 cp10
+    nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10; maxage = maxage10; 
+    clear nominal10 uncerts10 sp10 sf10 cp10 maxage10
 elseif exist('sp36')
-    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36;
-    clear nominal36 uncerts36 sp36 sf36 cp36
+    nominal = nominal36; uncerts = uncerts36; sp = sp36; sf = sf36; cp = cp36; maxage = maxage36; 
+    clear nominal36 uncerts36 sp36 sf36 cp36 maxage36
 end
     
 tic
@@ -27,7 +27,7 @@ pp = physpars();
 sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
-maxage=500;                            % 2000ka should be saturated for 36Cl. By trial and error I found that 500 does only ~0.5% diff in the result but doubles the speed
+% maxage=500;                            % 2000ka should be saturated for 36Cl. By trial and error I found that 500 does only ~0.5% diff in the result but doubles the speed
 data_ind = n+8-9*(n-1);                % index I use for referencing into the nominal and uncerts arrays, because unfortunately Cronus uses different order for the data depending on the nuclide
 Nobs = nominal(data_ind);              % measured concentration
 dNobs =uncerts(data_ind);              % uncertainty of observation
@@ -36,23 +36,23 @@ dNobs =uncerts(data_ind);              % uncertainty of observation
 k = 0.04;                              % universal step size tuned to parameter range
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus, I HOPE THIS CONVERSION IS CORRECT
+D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus
 W = W/10*sp.rb;                        % convert to g/cm²/ka 
-pprior_cur = 0;                        % only flat priors 
+ln_pprior_cur = 0;                        % only flat priors 
 
-pnames = {'D'};
+pnames = {'D'};                        % prior names
 range_in = diff(D);                    % ranges of parameters
 
-% Resolution, under which parameters resolution does stop the model
-err_max = Nobs*err/100;                % in at/g for nuclides, here defined to be 1% of N
+% Resolution under which parameters resolution does stop the model
+err_max = Nobs*err/100;                % in at/g for nuclides
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-m0 = D(1)+rand*diff(D);                % depending on what data you run
-% it may be a bit fast to cucomment this line and comment the two below.
+% m0 = D(1)+rand*diff(D);                % depending on what data you run
+% it may be a bit faster to comment this line and uncomment the two below.
 % The lines below start the MCMC from the conventional denudation rate.
-% Dini = {@be10erateraw, @cl36erateraw};
-% m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
+Dini = {@be10erateraw, @cl36erateraw};
+m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
@@ -73,7 +73,7 @@ forward_model = {@N10_forward,@N36_forward};        % to avoid opening more swit
 [Nm,~] = forward_model{n}(pp,sp,sf,cp,maxage,scaling_model,soil_mass,m0,Xcur);
 obs_err     = Nm - Nobs;                           % observational error
 ln_like_cur = (-1/2)*sum((obs_err./dNobs).^2);     % ln likelihood of model
-ln_prob_cur = ln_like_cur + log(pprior_cur);       % ln probability model
+ln_prob_cur = ln_like_cur + ln_pprior_cur;       % ln probability model
 
 % MAIN LOOP OF INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 current = m0;
@@ -88,7 +88,7 @@ while con      % run this while loop until modelled values meet stopping criteri
 
     % sample new random parameter ------------------------------------------
     candidate = current + randn(nd,1).* k .*range_in;
-    while candidate < D(1) || candidate > D(2)        % Makere su sample is within bounds of denudation rate
+    while candidate < D(1) || candidate > D(2)        % Make sure sample is within bounds of denudation rate
         candidate = current + randn(nd,1).* k .*range_in;
     end
     while up == 1 && (candidate < current)   % if the last accepted denudation rate resulted in too high concentration we have to further increase denudation
@@ -131,7 +131,7 @@ while con      % run this while loop until modelled values meet stopping criteri
     end
     
     % calculate logpriors for unifrom distribution
-    pprior_cand = 0;   % we're using uniform priors
+    ln_pprior_cand = 0;   % we're using uniform priors
 
     % new forward model ------------------------------------------------- %
     [Nm,~] = forward_model{n}(pp,sp,sf,cp,maxage,scaling_model,soil_mass,candidate,Xcur);
@@ -140,7 +140,7 @@ while con      % run this while loop until modelled values meet stopping criteri
     lr1 = (-1/2)*sum((candidate-current).^2./(k .*range_in).^2);
     lr2 = (-1/2)*sum((current-candidate).^2./(k .*range_in).^2);
     
-    ln_alpha = ln_like_cand + pprior_cand +lr1 - pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
+    ln_alpha = ln_like_cand + ln_pprior_cand +lr1 - ln_pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
     
     if (ln_alpha > 0)
         ln_alpha = 0;
@@ -154,15 +154,15 @@ while con      % run this while loop until modelled values meet stopping criteri
         % Accept the step.
         current = candidate;
         ln_like_cur = ln_like_cand;
-        pprior_cur = pprior_cand;
+        pprior_cur = ln_pprior_cand;
         nacc = nacc + 1;
-        post(nacc,:) = [candidate; ln_like_cand+pprior_cand];
+        post(nacc,:) = [candidate; ln_like_cand+ln_pprior_cand];
         if obs_err > 0; up = 1; else up = 0; end   % we know if the modelled N was to high we have to increase denudation rate
         disp(it)
-        if ln_like_cand+pprior_cand > -1
+        if ln_like_cand+ln_pprior_cand > -1        % decrease step size once we're close to a solution
             k = 0.01;
         elseif nacc > 350
-            disp('It seems like the algorithm has problems converging and will terminate now')
+            disp('It seems like the algorithm has problems converging and will terminate now. Rerun the algorithm, check the input, or play with the inversion parameters (e.g., k)')
             MAP = candidate;
             break
         end
@@ -182,8 +182,8 @@ toc
 %save final composition
 X = Xcur;
 
-% convert denudation rates back to mm/ka
-MAP = MAP/sp.rb*10;
+% convert denudation rates from g/cm2/ka to mm/ka
+MAP = MAP/sp.rb*10;   
 post(:,1) = post(:,1) ./sp.rb .*10;
 
 end

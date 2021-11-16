@@ -8,12 +8,13 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata,scaling] = CosmoDataRead('Test_Input_Single.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single2.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
 % in case your denudation rate is from an alluvial sample and you desire a
-% pixel-by-pixel calculated production rate provide a DEM
+% pixel-by-pixel calculated production rate, please provide a DEM
+% THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
     DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
@@ -29,10 +30,10 @@ end
 
 Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
 
-pars = Cronus_prep{X.n}(num,scaling,DEMdata);
+pars = Cronus_prep{X.n}(num,DEMdata);
 
 %% Calculate corrected denudation rate
 
-D = SBW_search(pars,scaling,X);  % denudation rate in mm/ka
+D = SBW_search(pars,X);  % denudation rate in mm/ka
 
 disp(['The corrected denudation rate is ' num2str(round(D)) ' mm/ka'])
