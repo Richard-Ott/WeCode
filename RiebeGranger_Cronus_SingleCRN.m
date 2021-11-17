@@ -46,10 +46,11 @@ D = [50,1e3];                          % Denudation min/max in mm/ka (Dmin > Wea
 thres = 0.1;                           % threshold of nuclide concentration error at which inversion has converged in % of N
 
 % run inversion
-[X,MAP,post] = singleCRN_MCMC(pars,D,X,thres);
+[XMAP,MAP,post] = singleCRN_MCMC(pars,D,X,thres);
 
-% estimate uncertainty
-% [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,MAP,thres);
+% estimate uncertainty, this take quite some time to calculate, therefore I
+% commented the next line to speed up the example
+[MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres);
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
 
@@ -61,16 +62,23 @@ subplot(1,2,2); plot(post(:,2),'LineWidth',1.5)
 xlabel('iteration'); ylabel('log posterior probability')
 
 % Report the values
-disp(['Denudation rate = ' num2str(round(MAP))  ' mm/ka'])
+% disp(['Denudation rate = ' num2str(round(MAP)) ' mm/ka'])
+disp(['Denudation rate = ' num2str(round(MAP)) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
 switch X.mode
     case 'soil'
-        disp(['Fraction of quartz in bedrock fQzB = ' num2str(X.fQzB)])
-        disp(['Fraction of X in bedrock fXB = ' num2str(X.fXB)])  
-        disp(['Fraction of calcite in bedrock fCaB = ' num2str(X.fCaB)])        
+        disp(['Fraction of quartz in bedrock fQzB = ' num2str(XMAP.fQzB) ' ' char(177) ' ' num2str(round(X_uncerts(1),3))])
+        disp(['Fraction of X in bedrock fXB = ' num2str(XMAP.fXB) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])  
+        disp(['Fraction of calcite in bedrock fCaB = ' num2str(XMAP.fCaB) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])     
+%         disp(['Fraction of quartz in bedrock fQzB = ' num2str(XMAP.fQzB) ])
+%         disp(['Fraction of X in bedrock fXB = ' num2str(XMAP.fXB)])  
+%         disp(['Fraction of calcite in bedrock fCaB = ' num2str(XMAP.fCaB)])  
     case 'bedrock'
-        disp(['Fraction of quartz in soil fQzS = ' num2str(X.fQzS) ])
-        disp(['Fraction of X in soil fXS = ' num2str(X.fXS)])
-        disp(['Fraction of calcite in soil fCaS = ' num2str(X.fCaS)])
+        disp(['Fraction of quartz in soil fQzS = ' num2str(XMAP.fQzS) ' ' char(177) ' ' num2str(round(X_uncerts(1),3)) ])
+        disp(['Fraction of X in soil fXS = ' num2str(XMAP.fXS) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])
+        disp(['Fraction of calcite in soil fCaS = ' num2str(XMAP.fCaS) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])
+%         disp(['Fraction of quartz in soil fQzS = ' num2str(XMAP.fQzS) ])
+%         disp(['Fraction of X in soil fXS = ' num2str(XMAP.fXS)])
+%         disp(['Fraction of calcite in soil fCaS = ' num2str(XMAP.fCaS)])
 end
 % 
 % export = input('Do you want to export your results? "y" or "n"? ','s');

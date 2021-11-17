@@ -1,4 +1,4 @@
-function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,MAP,thres)
+function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres)
 % Richard Ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
@@ -11,12 +11,13 @@ uncertainty=0.0;
 X_uncert = [0,0,0];
 for i=1:2
     parsC = pars;
+    parsC.uncertFlag =1;
     if i == 1
         if X.n == 1
-            thisdelta=0.01*pars.nominal10(9);
-            parsC.nominal10(9) = pars.nominal10(9) +  thisdelta;
-            parsC.sp10.concentration10 = parsC.nominal10(9);
-            parsC.cp10.N10m = parsC.nominal10(9);
+            thisdelta=0.01*pars.nominal10(9);                       % 1% of total N
+            parsC.nominal10(9) = pars.nominal10(9) +  thisdelta;    % add 1% to total N
+            parsC.sp10.concentration10 = parsC.nominal10(9);        % update sample parameters
+            parsC.cp10.N10m = parsC.nominal10(9);                   % update computed parameters 
         elseif X.n == 2
             thisdelta=0.1*pars.nominal36(1);
             parsC.nominal36(1) = pars.nominal36(1) +  thisdelta;
@@ -25,93 +26,101 @@ for i=1:2
         end
     else
       thisdelta=0.01*X.W;
+      X.W = X.W + thisdelta;
     end
     
     % run inversion, try to start close to final value to speed up
-    % inversion
+    % inversion, if it does not work-use full range
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/10, ;MAP+MAP/10],X,thres); % find erate and composition
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,scaling_model,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,D,X,thres);
     end
     
-    deratei=(deltaerate - MAP)/(thisdelta);
+    deratei=(deltaerate - MAP)/thisdelta;
     
     switch X.mode
         case 'soil'
-            dXi = [dX.fQzB - X.fQzB, dX.fCaB - X.fCaB, dX.fXB - X.fXB] ./thisdelta;
+            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
         case 'bedrock'
-            dXi = [dX.fQzS - X.fQzS, dX.fCaS - X.fCaS, dX.fXS - X.fXS] ./thisdelta;
+            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
     end
     
     if i == 1 % N uncertainty
         if X.n == 1
-            uncertainty=uncertainty+(deratei^2*pars.uncerts10(9)^2);
-            X_uncert    = dXi.^2 .* pars.uncerts10(9)^2;  % relative uncertainty in compositions
+            uncertainty=uncertainty+ deratei^2*pars.uncerts10(9)^2;
+            X_uncert    = X_uncert + dXi.^2 .* pars.uncerts10(9)^2;  % relative uncertainty in compositions
         elseif X.n == 2
-            uncertainty=uncertainty+(deratei^2*pars.uncerts36(1)^2);
-            X_uncert    = dXi.^2 .* pars.uncerts36(1)^2;            
+            uncertainty=uncertainty+ deratei^2*pars.uncerts36(1)^2;
+            X_uncert    = X_uncert + dXi.^2 .* pars.uncerts36(1)^2;            
         end 
         waitbar(0.33,wb)
     else     % W uncertainty
-        uncertainty=uncertainty+(deratei^2*X.Wstd^2);
-        X_uncert    = X_uncert + (dXi.^2 .* X.Wstd.^2);  % relative uncertainty in compositions
+        uncertainty=uncertainty+ deratei^2*X.Wstd^2;
+        X_uncert    = X_uncert + dXi.^2 .* X.Wstd.^2;  % relative uncertainty in compositions
         waitbar(0.66,wb)
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% PRODUCTION UNCERTAINTY (only spallation)
+%% PRODUCTION UNCERTAINTY (only spallation) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 deltapp = pars.pp;
 if X.n == 1
-    deltapp.PsBe= pars.pp.PsBe+0.1*abs(pars.pp.PsBe);
+    deltapp.PsBe= pars.pp.PsBe+0.1*abs(pars.pp.PsBe);  % 1% chnage in spallation production
     % run inversion, try to start close to final value to speed up
     % inversion
+    parsC = pars;
+    parsC.pp = deltapp; parsC.uncertFlag =1;
+    % run inversion, try to start close to final value to speed up
+    % inversion, if it does not work-use full range
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,D,X,thres);
     end
     deratepsBe  =(deltaerate-MAP)/(0.1*abs(pars.pp.PsBe));
     % compositional uncert
     switch X.mode
         case 'soil'
-            dXi = [dX.fQzB - X.fQzB, dX.fCaB - X.fCaB, dX.fXB - X.fXB] ./thisdelta;
+            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
         case 'bedrock'
-            dXi = [dX.fQzS - X.fQzS, dX.fCaS - X.fCaS, dX.fXS - X.fXS] ./thisdelta;
+            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
     end
-    X_uncert    = X_uncert + (dXi.^2 .* pars.pp.sigmaPsBe.^2);  
-    uncertainty = uncertainty+(deratepsBe^2*pars.pp.sigmaPsBe^2);
+    X_uncert    = X_uncert +   dXi.^2 .* pars.pp.sigmaPsBe.^2;  
+    uncertainty = uncertainty+ deratepsBe^2*pars.pp.sigmaPsBe^2;
     
 elseif X.n == 2
     deltapp.PsCa= pars.pp.PsCa0+0.1*abs(pars.pp.PsCa0);
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
-        [dX,deltaerate,~] = singleCRN_MCMC(pars,scaling_model,D,X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(pars,D,X,thres);
     end
     
     % compositional uncert
     switch X.mode
         case 'soil'
-            dXi = [dX.fQzB - X.fQzB, dX.fCaB - X.fCaB, dX.fXB - X.fXB] ./thisdelta;
+            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
         case 'bedrock'
-            dXi = [dX.fQzS - X.fQzS, dX.fCaS - X.fCaS, dX.fXS - X.fXS] ./thisdelta;
+            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
     end
     
-    X_uncert  = X_uncert + (dXi.^2 .* pars.pp.sigmaPsCa0.^2);
+    X_uncert  = X_uncert + dXi.^2 .* pars.pp.sigmaPsCa0.^2;
     deratepsCa  =(deltaerate-MAP)/(0.1*abs(pars.pp.PsCa0));
     uncertainty = uncertainty+(deratepsCa^2*pars.pp.sigmaPsCa0^2);    
 end
+
+%Combined uncertainty of denudation rate
 MAP_uncerts     = sqrt(uncertainty);
 
+% Combined uncertainty of mineral fractions
 switch X.mode
     case 'soil'
-        X_uncerts       = sqrt(X_uncert).* [X.fQzB, X.fCaB, XfXB];
+        X_uncerts       = sqrt(X_uncert);
     case 'bedrock'
-        X_uncerts       = sqrt(X_uncert).* [X.fQzS, X.fCaS, X.fXS];
+        X_uncerts       = sqrt(X_uncert);
 end
 
 close(wb)

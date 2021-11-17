@@ -52,9 +52,16 @@ switch X.mode
     case 'bedrock'
         m0(1) = fQzS(1)+rand*range_in(1);       % create random parameters
 end
-spini = sp36; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
-m0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters earch at 36Cl rate (for a carbonate composition this should be closer to the real denudation rate)
-% m0(2) = D(1)+rand*diff(D);             % create random parameters, you
+% This statement starts the parameter search at a random location for the
+% denudation rate uncertainty estimate (required).
+% For the actual dendation rate, the parameter seach starts at what would
+% be the conventional 36Cl-denudation rate as a best guess.
+if isfield(pars,'uncertFlag')
+    m0(2) = D(1)+rand*diff(D);             
+else
+    spini = sp36; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
+    m0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters earch at 36Cl rate (for a carbonate composition this should be closer to the real denudation rate)
+end
 
 % Run initial forward model -----------------------------------------------
 counter =0;

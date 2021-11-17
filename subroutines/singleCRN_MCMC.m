@@ -48,11 +48,17 @@ err_max = Nobs*err/100;                % in at/g for nuclides
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% m0 = D(1)+rand*diff(D);                % depending on what data you run
-% it may be a bit faster to comment this line and uncomment the two below.
-% The lines below start the MCMC from the conventional denudation rate.
-Dini = {@be10erateraw, @cl36erateraw};
-m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
+% This statement starts the parameter search at a random location for the
+% denudation rate uncertainty estimate (required).
+% For the actual dendation rate, the parameter seach starts at what would
+% be the conventional denudation rate as a best guess.
+if isfield(pars,'uncertFlag')
+    m0 = D(1)+rand*diff(D);               
+else
+    Dini = {@be10erateraw, @cl36erateraw};
+    m0 = Dini{n}(pp,sp,sf,cp,scaling_model,0);
+end
+
 
 % Run initial forward model -----------------------------------------------
 Xcur  = X;
