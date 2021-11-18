@@ -14,25 +14,25 @@ for i=1:2
     parsC.uncertFlag =1;
     if i == 1
         if X.n == 1
-            thisdelta=0.01*pars.nominal10(9);                       % 1% of total N
+            thisdelta=0.1*pars.nominal10(9);                       % 1% of total N
             parsC.nominal10(9) = pars.nominal10(9) +  thisdelta;    % add 1% to total N
             parsC.sp10.concentration10 = parsC.nominal10(9);        % update sample parameters
             parsC.cp10.N10m = parsC.nominal10(9);                   % update computed parameters 
         elseif X.n == 2
-            thisdelta=0.1*pars.nominal36(1);
-            parsC.nominal36(1) = pars.nominal36(1) +  thisdelta;
+            thisdelta=0.1*pars.nominal36(1);                        % for the soluble mineral and weathering I rather lower the value because otherwise you quickly run into a no-go zone
+            parsC.nominal36(1) = pars.nominal36(1) -  thisdelta;
             parsC.sp36.concentration36 = parsC.nominal36(1);
             parsC.cp36.N36m = parsC.nominal36(1);
         end
     else
-      thisdelta=0.01*X.W;
-      X.W = X.W + thisdelta;
+      thisdelta=0.1*X.W;
+      X.W = X.W - thisdelta;
     end
     
     % run inversion, try to start close to final value to speed up
     % inversion, if it does not work-use full range
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/10, ;MAP+MAP/10],X,thres); % find erate and composition
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/2, ;MAP+MAP/2],X,thres); % find erate and composition
     catch
         [dX,deltaerate,~] = singleCRN_MCMC(parsC,D,X,thres);
     end
@@ -68,7 +68,8 @@ end
 
 deltapp = pars.pp;
 if X.n == 1
-    deltapp.PsBe= pars.pp.PsBe+0.1*abs(pars.pp.PsBe);  % 1% chnage in spallation production
+    thisdelta = 0.1*abs(pars.pp.PsBe);
+    deltapp.PsBe= pars.pp.PsBe+ thisdelta;  % 1% chnage in spallation production
     % run inversion, try to start close to final value to speed up
     % inversion
     parsC = pars;
@@ -76,11 +77,11 @@ if X.n == 1
     % run inversion, try to start close to final value to speed up
     % inversion, if it does not work-use full range
     try
-        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
+        [dX,deltaerate,~] = singleCRN_MCMC(parsC,[MAP- MAP/2, ;MAP+MAP/2],X,thres);
     catch
         [dX,deltaerate,~] = singleCRN_MCMC(parsC,D,X,thres);
     end
-    deratepsBe  =(deltaerate-MAP)/(0.1*abs(pars.pp.PsBe));
+    deratepsBe  =(deltaerate-MAP)/thisdelta;
     % compositional uncert
     switch X.mode
         case 'soil'
@@ -92,7 +93,8 @@ if X.n == 1
     uncertainty = uncertainty+ deratepsBe^2*pars.pp.sigmaPsBe^2;
     
 elseif X.n == 2
-    deltapp.PsCa= pars.pp.PsCa0+0.1*abs(pars.pp.PsCa0);
+    thisdelta = 0.1*abs(pars.pp.PsCa0);
+    deltapp.PsCa= pars.pp.PsCa0+thisdelta;
     try
         [dX,deltaerate,~] = singleCRN_MCMC(pars,[MAP- MAP/10, ;MAP+MAP/10],X,thres);
     catch
@@ -108,7 +110,7 @@ elseif X.n == 2
     end
     
     X_uncert  = X_uncert + dXi.^2 .* pars.pp.sigmaPsCa0.^2;
-    deratepsCa  =(deltaerate-MAP)/(0.1*abs(pars.pp.PsCa0));
+    deratepsCa  =(deltaerate-MAP)/thisdelta;
     uncertainty = uncertainty+(deratepsCa^2*pars.pp.sigmaPsCa0^2);    
 end
 

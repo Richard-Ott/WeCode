@@ -22,7 +22,7 @@ Nobs = [nominal10(9);nominal36(1)];       % measured concentration
 dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-k = 0.09;                              % universal step size tuned to parameter range 0,04
+k = 0.06;                              % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus
@@ -56,7 +56,7 @@ end
 % denudation rate uncertainty estimate (required).
 % For the actual dendation rate, the parameter seach starts at what would
 % be the conventional 36Cl-denudation rate as a best guess.
-if isfield(pars,'uncertFlag')
+if isfield(pars10,'uncertFlag')
     m0(2) = D(1)+rand*diff(D);             
 else
     spini = sp36; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
@@ -177,9 +177,8 @@ while con      % run this while loop until modelled values meet stopping criteri
         if ln_like_cand+ln_pprior_cand > -1 % if the algorithm gets close to the solution, reduce step size
             k = 0.01;
         elseif nacc > 350
-            disp('It seems like the algorithm has problems converging and will terminate now')
             MAP = candidate;
-            break
+            error('It seems like the algorithm has problems converging and will terminate now')
         end
     end
     

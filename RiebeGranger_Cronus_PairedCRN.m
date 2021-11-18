@@ -46,8 +46,12 @@ D = [5,1e3];                           % Denudation min/max in mm/ka
 % automatically set to fractions between 0 and 1 in the MCMC function.
 
 % run inversion
-[X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,D,X);
+[XMAP,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,D,X);
 
+% OPTIONAL
+% estimate uncertainty, this take quite some time to calculate, therefore I
+webma% commented the next line to speed up the example
+[MAP_uncerts, X_uncerts] = pairedCRN_uncerts(pars10,pars36,D,X,XMAP,MAP);
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
 

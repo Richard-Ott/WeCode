@@ -15,7 +15,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single2.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -48,6 +48,8 @@ thres = 0.1;                           % threshold of nuclide concentration erro
 % run inversion
 [XMAP,MAP,post] = singleCRN_MCMC(pars,D,X,thres);
 
+
+% OPTIONAL
 % estimate uncertainty, this take quite some time to calculate, therefore I
 % commented the next line to speed up the example
 [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres);
