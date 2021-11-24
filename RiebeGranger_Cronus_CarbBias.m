@@ -21,9 +21,9 @@ close all
 addpath '.\subroutines'
 
 % User choice ----------------------------------------------------------- %
-nuclide = '10Be';      % nuclide of interest e.g. '10Be', '36Cl'
+nuclide = '36Cl';      % nuclide of interest e.g. '10Be', '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~] = xlsread('Test_Input_Single.xlsx',1);
+[num,txt,~] = xlsread('Test_Input_Single2.xlsx',1);
 DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 
 %% assign data and initial basin calculations --------------------------- %
@@ -40,7 +40,7 @@ if strcmpi('basin',DEMdata.method)
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
-pp=physpars();                                   % get physical parameters
+pp=physpars();                             % get physical parameters
 nsamples=size(num,1);                      % number of samples
 
 
@@ -48,7 +48,7 @@ nsamples=size(num,1);                      % number of samples
 
 switch nuclide; case '10Be'; n = 1; case '36Cl'; n = 2; end    
 Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
-pars = Cronus_prep{n}(num,scaling_model,DEMdata);
+pars = Cronus_prep{n}(num,DEMdata);
 v2struct(pars)
 
 % rename some variables. This may look ugly for this script but is used to
@@ -80,7 +80,7 @@ for i = 1:length(ph)
     % mean production rate within soil
     sp.depthtotop = ph(i);            % set depth to soil bedrock interface
     sp.epsilon = erate_raw;           % conventional erosion rate from erateraw function
-    soil_depths = 1:0.1:ph(i); 
+    soil_depths = 0:0.1:ph(i); 
     Pz = nan(length(soil_depths),1);  % set up empty vector for production rates in soil with depth
     
     switch nuclide
@@ -138,7 +138,6 @@ cmap = struct2cell(cmap);
 cmap = cmap{1};
 imagesc(Xs_Xr,ph,p_err,[-170,170]); hold on
 colormap(cmap)
-% contour(X,Y,p_err,'k','LevelList',[-10:5:100])
 contour(X,Y,p_err,'k','ShowText','on','LevelList',[-50:10:200],'LabelSpacing',500)
 set(gca,'YDir','normal');
 xlabel('X_{soil}/X_{rock}');
