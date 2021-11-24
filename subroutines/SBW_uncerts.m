@@ -71,7 +71,7 @@ elseif X.n == 2
     thisdelta = 0.1*abs(pars.pp.PsCa0);
     deltapp.PsCa= pars.pp.PsCa0+thisdelta;
     
-    [deltaerate,dX] = SBW_search(parsC,X);
+    deltaerate = SBW_search(parsC,X);
     deratepsCa  =(deltaerate-D)/thisdelta;
     uncertainty = uncertainty+(deratepsCa^2*pars.pp.sigmaPsCa0^2);  
     waitbar(1,wb)
