@@ -1,7 +1,7 @@
-function [X,MAP,post] = singleCRN_BrutForce(pars,D,X,err)
-% Calculates the "real" denudation rate from a nuclide measurement, the
-% bedrock or soil chemistry and a weathering rate.
-% The solution is found through a MCMC algorithm.
+function [X,MAP,post] = singleCRN_BrutForce(pars,D,X)
+% Computes the nuclide concentrations for a range of denudation rates and
+% plots the output. I mostly use this for debugging or checking
+% dependencies.
 % Richard Ott, 2021
 
 global scaling_model
@@ -47,11 +47,12 @@ pnames = {'D'};                        % prior names
 range_in = diff(D);                    % ranges of parameters
 
 % Resolution under which parameters resolution does stop the model
-err_max = Nobs*err/100;                % in at/g for nuclides
 nd = length(pnames);                   % number of dimensions
 
 Drates = linspace(D(1),D(2));
 Nm = nan(100,1);
+XsXr = Nm;
+term = Nm;
 forward_model = {@N10_forward,@N36_forward};        % to avoid opening more switch statements, I compile the functions for each case here
 for i = 1:100   
 
@@ -67,26 +68,28 @@ for i = 1:100
             Xcur.fQzS = Xcur.fQzB * (1/fE);
             Xcur.fXS  = Xcur.fXB  * (1/fE); 
             Xcur.fCaS = 1 - Xcur.fQzS - Xcur.fXS;
+            XsXr(i) = Xcur.fCaS/Xcur.fCaB;
     end
 
     % new forward model ------------------------------------------------- %
     [Nm(i),~] = forward_model{n}(pp,sp,sf,cp,maxage,scaling_model,soil_mass,m0,Xcur);
     obs_err     = Nm - Nobs;                                    % observational error
-
+    
+    
+%     term(i) = 1*(soil_mass./m0).* ((Xcur.fCaB*m0-W)./(Xcur.fCaB*m0-Xcur.fCaB*W));
 
 end
-
-plot(Drates./sp.rb*10,Nm);
+cc = lines(3);
+yyaxis left
+plot(Drates./sp.rb*10,Nm,'Color',cc(1,:))  % N
 hold on
 yline(Nobs);
+% plot(Drates./sp.rb*10,N0,'Color',cc(2,:))  % n0
+% plot(Drates./sp.rb*10,test,'Color',cc(3,:))  % Nsoil
+yyaxis right
+% plot(Drates./sp.rb*10,XsXr,'Color',cc(3,:))  % XsXr
+% plot(Drates./sp.rb*10,term,'Color',cc(2,:))  % XsXr
 
-
-%save final composition
-X = Xcur;
-
-% convert denudation rates from g/cm2/ka to mm/ka
-MAP = MAP/sp.rb*10;   
-post(:,1) = post(:,1) ./sp.rb .*10;
-
+legend('Ntotal','N observed','N-interface','Xs/Xr')
 end
 

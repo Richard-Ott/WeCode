@@ -26,7 +26,7 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 
 % final average soil mineral soil concentration
 Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;  
-
+test = P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;
 
 D_CaS = D * X.fCaB/X.fCaS;
 
