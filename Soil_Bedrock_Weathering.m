@@ -37,6 +37,6 @@ pars = Cronus_prep{X.n}(num,DEMdata);
 D = SBW_search(pars,X);  % denudation rate in mm/ka
 
 % calculate uncertinty from N,W, and productioon rates
-D_uncert = SBW_uncerts(pars,X,D);
+D_uncerts = SBW_uncerts(pars,X,D);
 
 disp(['The corrected denudation rate is ' num2str(round(D)) ' ' char(177) ' ' num2str(round(D_uncerts))  ' mm/ka'])
