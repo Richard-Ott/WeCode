@@ -10,7 +10,7 @@ function pars10 = Cronus_prep10(num,DEMdata)
 %           0 or 1
 %           - if DEMdata == 1, then provide DEM, DB and utmzone of the DEM
 %
-% Note that I decreased some of the sfatey factors for the depth
+% Note that I decreased some of the safety factors for the depth
 % integration compared to the original Cronus calculator. For most
 % denudation rates this will be ok. But if you run into errors or weird
 % output, check the max_age and max_depth parameters of the depth
@@ -55,7 +55,7 @@ if strcmpi('basin',DEMdata.method)
     sp.P = stdatm(nanmean(DEM.Z(DB.Z == 1)));
     sf = scalefacs1026Basin(sp,scaling_model,DEM,DB,utmzone);   % scaling factors
 else
-    sp.P = stdatm(sp.elevation);            % air pressure
+    if isnan(sp.P); sp.P = stdatm(sp.elevation); end   % air pressure from elevation, if value not provided
     sf = scalefacs1026(sp,scaling_model);   % scaling factors
 end
 % We need an absolute maximum age for several purposes, including
@@ -71,19 +71,14 @@ maxdepth10 = maxage10*max_erate_guess+sp.ls*sp.rb+1000; % safety factor in origi
 % Computed parameters.
 cp = comppars1026(pp,sp,sf,maxdepth10);
 
-% the denudation rate 
-% erate_raw = be10erateraw(pp,sp,sf,cp,scaling_model,0);
-%         eratemm=erate_raw/sp.rb*10;
-
 % save all the parameters
 pars10.nominal10   = nominal10;
 pars10.uncerts10   = uncerts10;
 pars10.sp10        = sp;
 pars10.sf10        = sf;
 pars10.cp10        = cp;
-pars10.maxage10      = maxage10;
-pars10.maxdepth10    = maxdepth10;
-% pars10.erate_raw10 = erate_raw;
+pars10.maxage10    = maxage10;
+pars10.maxdepth10  = maxdepth10;
 pars10.pp          = pp;
 
 end

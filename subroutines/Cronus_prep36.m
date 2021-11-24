@@ -49,32 +49,28 @@ if isnan(num(79)),num(79) = 0;     end % default covariation
 % -----------------------------------------------------
 
 
-[nominal36,uncerts36,cov36]=createage36(num);    % Get basic info about the sample ages.
+[nominal36,uncerts36,~]=createage36(num);    % Get basic info about the sample ages.
 
 sp = samppars36(nominal36);
 if strcmpi('basin',DEMdata.method)
     sp.P = stdatm(nanmean(DEM.Z(DB.Z == 1)));
     sf = scalefacs36Basin(sp,scaling_model,DEM,DB,utmzone);   % scaling factors
 else
-    sp.P = stdatm(sp.elevation);
+    if isnan(sp.P); sp.P = stdatm(sp.elevation); end % air pressure from elevation, if value not provided
     sf = scalefacs36(sp,scaling_model);   % scaling factors
 end
 % We need an absolute maximum age for several purposes, including
 % detecting saturated samples and setting the maximum depth for comppars.
-maxage10=500;                             % It'll be saturated after 2Ma, decreased safety factor from original Cronus too increase speed without introducing too much bias
+maxage36=500;            % It'll be saturated after 2Ma, decreased safety factor from original Cronus too increase speed without introducing too much bias
 
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  This is depthtotop + maxage * erosion (g/cm2/kyr) +
 % thickness * density + a safety factor. 
 max_erate_guess = 400;     % maximum guess of erosion rate in area in mm/ka
-maxdepth10 = maxage10*max_erate_guess+sp.ls*sp.rb+1000; 
+maxdepth36 = maxage36*max_erate_guess+sp.ls*sp.rb+1000; 
 
 % Computed parameters.
-cp=comppars36(pp,sp,sf,maxdepth10);
-
-% the denudation rate 
-% erate_raw=cl36erateraw(pp,sp,sf,cp,scaling_model,0);
-%         eratemm=erate_raw/sp.rb*10;
+cp=comppars36(pp,sp,sf,maxdepth36);
 
 % save all the parameters
 pars36.nominal36   = nominal36;
@@ -82,9 +78,8 @@ pars36.uncerts36   = uncerts36;
 pars36.sp36        = sp;
 pars36.sf36        = sf;
 pars36.cp36        = cp;
-pars36.maxage36      = maxage10;
-pars36.maxdepth36    = maxdepth10;
-% pars36.erate_raw36 = erate_raw;
+pars36.maxage36    = maxage36;
+pars36.maxdepth36  = maxdepth36;
 pars36.pp          = pp;
 
 end

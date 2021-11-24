@@ -11,7 +11,7 @@ W = W/10*sp36.rb; % convert from mm/ka to g/cm2/ka
 sp36.epsilon = D;  
 sp36.depthtotop = soil_mass;           % set depth to soil bedrock interface
 
-N_SBI36 = predN36(pp,sp36,sf36,cp36,maxage,scaling_model,1);  % 36Cl concentration at soil-bedrock interface
+N_SBI36 = predN36(pp,sp36,sf36,cp36,maxage36,scaling_model,1);  % 36Cl concentration at soil-bedrock interface
     
 % Calculate average production rate within soil
 sf36.currentsf=getcurrentsf(sf36,0,scaling_model,'cl');

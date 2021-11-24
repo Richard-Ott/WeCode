@@ -11,7 +11,7 @@ W = W/10*sp10.rb;       % convert from mm/ka to g/cm2/ka
 sp10.epsilon = D;  
 sp10.depthtotop = soil_mass;           % set depth to soil bedrock interface
 
-N_SBI10 = predN1026(pp,sp10,sf10,cp10,maxage,scaling_model,1);  % 10Be concentration at soil-bedrock interface 
+N_SBI10 = predN1026(pp,sp10,sf10,cp10,maxage10,scaling_model,1);  % 10Be concentration at soil-bedrock interface 
     
 % Calculate average production rate within soil
 sf10.currentsf=getcurrentsf(sf10,0,scaling_model,'be'); % this extracts modern scaling factors.

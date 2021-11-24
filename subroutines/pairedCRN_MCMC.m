@@ -12,7 +12,6 @@ soil_mass = X.soil_mass;
 tic
 % ------------------------------------------------------------------- %
 % set some constants
-pp = physpars();                         % get physical parameters 
 sp10.depthtotop = soil_mass;             % set depth to soil bedrock interface
 sp36.depthtotop = soil_mass;             % set depth to soil bedrock interface
 
@@ -22,10 +21,10 @@ Nobs = [nominal10(9);nominal36(1)];       % measured concentration
 dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-k = 0.06;                              % universal step size tuned to parameter range 0,04
+k = 0.06;                                 % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-D = D/10*sp10.rb;                      % convert to g/cm²/ka for Cronus
+D = D/10*sp10.rb;                         % convert to g/cm²/ka for Cronus
 ln_pprior_cur = 0;                        % only flat priors 
 
 switch X.mode
@@ -41,7 +40,6 @@ end
 
 % Resolution, under which parameters resolution does stop the model
 err_max = Nobs/100;                    % in at/g for both nuclides, here defined to be 1% of N
-
 nd = length(pnames);                   % number of dimensions
 
 % INIITAL MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,10 +173,10 @@ while con      % run this while loop until modelled values meet stopping criteri
         post(nacc,:) = [candidate; ln_like_cand+ln_pprior_cand];
         disp(it)
         if ln_like_cand+ln_pprior_cand > -1 % if the algorithm gets close to the solution, reduce step size
-            k = 0.01;
+            k = 0.005;
         elseif nacc > 350
             MAP = candidate;
-            error('It seems like the algorithm has problems converging and will terminate now')
+            error('It seems like the algorithm has problems converging and will terminate now. Rerun the algorithm, check the input, or play with the inversion parameters (e.g., k)')
         end
     end
     
@@ -207,8 +205,8 @@ end
 % take MAP solution and calculate soil erosion and soil denudation rate
 [~,~,~,W] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,MAP(2),Xcur);
 
-% convert denudation rates from g/cm2/ka to mm/ka
-MAP(2) = MAP(2)/sp10.rb*10;
+% convert denudation/weathering rates from g/cm2/ka to mm/ka
+MAP(2) = MAP(2)/sp10.rb*10;  
 post(:,2) = post(:,2) ./sp10.rb .*10;
 W = W/sp10.rb*10;
 
