@@ -1,24 +1,16 @@
-function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres)
+function MAP_uncerts = singleCRN_uncerts(pars,D,X,MAP,thres)
 % Richard Ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
 global scaling_model
 
-% if there were two solutions, only calculate uncertainty for the higher
-% denudation rate solution
-if isfield(pars,'nonunique')
-    [MAP,ind] = max(MAP); XMAP = XMAP(ind);
-    bounds = [pars.D_Nmax, ;D(2)];  % bounds for upper rate
-else
-    bounds = D;  
-end    
+bounds = D;   
 
 
-%% NUCLIDE CONCENTRATION AND WEATHERING UNCERTAINTY
+%% NUCLIDE CONCENTRATION AND CDF UNCERTAINTY
 % only uncertainties from nuclide concentration and weathering rate are
 % considered in this section
 uncertainty=0.0;
-X_uncert = [0,0,0];
 for i=1:2
     Xcur = X;
     parsC = pars;
@@ -40,35 +32,25 @@ for i=1:2
             parsC.cp36.N36m = parsC.nominal36(1);
         end
     else
-      thisdelta=0.05*Xcur.W;
-      Xcur.W = Xcur.W - thisdelta;
+      thisdelta=0.05*Xcur.CDF;
+      Xcur.CDF = Xcur.CDF - thisdelta;
     end
     
     % run optimization
-    [deltaerate,dX] = singleCRN_Optim(parsC,bounds,Xcur,thres); % find erate and composition
+    deltaerate = singleCRN_Optim(parsC,bounds,Xcur,thres); % find erate and composition
     if isfield(pars,'nonunique'); [deltaerate,ind] = max(deltaerate); dX = dX(ind);end
 
     deratei=(deltaerate - MAP)/thisdelta;
     
-    switch X.mode
-        case 'soil'
-            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
-        case 'bedrock'
-            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
-    end
-    
     if i == 1 % N uncertainty
         if X.n == 1
             uncertainty=uncertainty+ deratei^2*pars.uncerts10(9)^2;
-            X_uncert    = X_uncert + dXi.^2 .* pars.uncerts10(9)^2;  % relative uncertainty in compositions
         elseif X.n == 2
             uncertainty=uncertainty+ deratei^2*pars.uncerts36(1)^2;
-            X_uncert    = X_uncert + dXi.^2 .* pars.uncerts36(1)^2;            
         end 
         waitbar(0.33,wb)
-    else     % W uncertainty
-        uncertainty=uncertainty+ deratei^2*X.Wstd^2;
-        X_uncert    = X_uncert + dXi.^2 .* X.Wstd.^2;  % relative uncertainty in compositions
+    else     % CDF uncertainty
+        uncertainty=uncertainty+ deratei^2*X.CDFstd^2;
         waitbar(0.66,wb)
     end
 end
@@ -87,17 +69,10 @@ if X.n == 1
     parsC.pp = deltapp; parsC.uncertFlag =1;
     
     % run optimization
-    [deltaerate,dX] = singleCRN_Optim(parsC,bounds,X,thres);
+    deltaerate = singleCRN_Optim(parsC,bounds,X,thres);
 
     deratepsBe  =(deltaerate-MAP)/thisdelta;
-    % compositional uncert
-    switch X.mode
-        case 'soil'
-            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
-        case 'bedrock'
-            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
-    end
-    X_uncert    = X_uncert +   dXi.^2 .* pars.pp.sigmaPsBe.^2;  
+
     uncertainty = uncertainty+ deratepsBe^2*pars.pp.sigmaPsBe^2;
     
 elseif X.n == 2
@@ -105,18 +80,9 @@ elseif X.n == 2
     deltapp.PsCa= pars.pp.PsCa0+thisdelta;
     
     
-   [deltaerate,dX] = singleCRN_Optim(pars,bounds,X,thres);
+   deltaerate = singleCRN_Optim(pars,bounds,X,thres);
     if isfield(pars,'nonunique'); [deltaerate,ind] = max(deltaerate); dX = dX(ind);end
-    
-    % compositional uncert
-    switch X.mode
-        case 'soil'
-            dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
-        case 'bedrock'
-            dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
-    end
-    
-    X_uncert  = X_uncert + dXi.^2 .* pars.pp.sigmaPsCa0.^2;
+
     deratepsCa  =(deltaerate-MAP)/thisdelta;
     uncertainty = uncertainty+(deratepsCa^2*pars.pp.sigmaPsCa0^2);  
     waitbar(1,wb)
@@ -124,15 +90,6 @@ end
 
 %Combined uncertainty of denudation rate
 MAP_uncerts     = sqrt(uncertainty);
-
-% Combined uncertainty of mineral fractions
-switch X.mode
-    case 'soil'
-        X_uncerts       = sqrt(X_uncert);
-    case 'bedrock'
-        X_uncerts       = sqrt(X_uncert);
-end
-
 close(wb)
 
 end

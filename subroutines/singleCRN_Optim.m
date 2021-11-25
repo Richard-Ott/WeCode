@@ -1,4 +1,4 @@
-function [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres)
+function MAP = singleCRN_Optim(pars,D,X,thres)
 % Calculates the "real" denudation rate from a nuclide measurement, the
 % bedrock or soil chemistry and a weathering rate.
 % The solution is found through the fminsearch optimization algorithm.
@@ -30,13 +30,7 @@ data_ind = n+8-9*(n-1);                % index I use for referencing into the no
 Nobs = nominal(data_ind);              % measured concentration
         
 % INPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The enrichment cannot produce denudation rates that would lead to
-% enrichment of insoluble minerals that go beyonf 100% of the soil fraction
-if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
-
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus
-W = W/10*sp.rb;                        % convert to g/cm²/ka 
 tolerance = Nobs*thres/100;            % in at/g for nuclides
 
 % Define options for optimization  
@@ -50,21 +44,21 @@ options = optimset('MaxIter',5e4,'TolFun',tolerance,'TolX',0.05);
 x0model = {@be10erateraw, @cl36erateraw};
 spini = sp; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
 x0 = x0model{n}(pp,spini,sf,cp,scaling_model,0);
-fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
+forward_model = {@N10_forward,@N36_forward};        % to avoid opening more switch statements, I compile the functions for each case here
+fun = @(x) abs(forward_model{X.n}(pp,sp,sf,cp,maxage,scaling_model,X.soil_mass,x,X) - Nobs);
 [MAP,~] = fminsearchbnd(fun,x0,D(1),D(2),options);
 
 % run forward model one more time for compositional output
-[~,X_MAP] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP,X);
 toc
 
-% for soluble mineral with a nuclide concentration that is nonunique, we
-% need to calculate the second solution.
-if exist('nonunique')
-    if MAP > D_Nmax; bounds = [D(1), D_Nmax]; else; bounds = [D_Nmax,D(2)];end
-    fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
-    MAP = [MAP, fminsearchbnd(fun,x0,bounds(1),bounds(2),options)];
-    [~,X_MAP(2)] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2),X);
-end    
+% % for soluble mineral with a nuclide concentration that is nonunique, we
+% % need to calculate the second solution.
+% if exist('nonunique')
+%     if MAP > D_Nmax; bounds = [D(1), D_Nmax]; else; bounds = [D_Nmax,D(2)];end
+%     fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
+%     MAP = [MAP, fminsearchbnd(fun,x0,bounds(1),bounds(2),options)];
+%     [~,X_MAP(2)] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2),X);
+% end    
 
 MAP = MAP/sp.rb*10;  % convert back to mm/ka
 

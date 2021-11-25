@@ -1,4 +1,4 @@
-function [Ntot10, D_QzS] = N10_forward(pp,sp10,sf10,cp10,maxage,scaling_model,soil_mass,D,X)
+function Ntot10 = N10_forward(pp,sp10,sf10,cp10,maxage,scaling_model,soil_mass,D,X)
 % This functions computes the average soil nuclide concentration in a soil
 % with differential weathering of 2 minerals (here assumed to be quartz and
 % calcite). 
@@ -27,10 +27,7 @@ P_avg10 = mean(Pz10);   % 10Be average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (X.fQzS/X.fQzB);  
-
-
-D_QzS = D * X.fQzB/X.fQzS;
+Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (1/(1-X.CDF)); 
 
 end
 

@@ -24,6 +24,7 @@ switch length(sheets)
         [Xdata,Xtxt,~] = xlsread(filename,find(~nuclide_sheet));         % load compositional data,
         
         X.CDF          = Xdata(1);                                       % CDF of target mineral
+        X.CDFstd       = Xdata(2);
         
         num = num(ind,:); 
         sampName = txt{ind+2,1}; 
@@ -51,10 +52,10 @@ switch length(sheets)
 end
 
 Xdata = Xdata(ind,:);                                                    % select sample data
-DEMdata.method = Xtxt{ind+1,5};
-X.soil_mass    = Xdata(2);
+DEMdata.method = Xtxt{ind+1,6};
+X.soil_mass    = Xdata(3);
 global scaling_model
-scaling_model  = Xtxt{ind+1,4};       
+scaling_model  = Xtxt{ind+1,5};       
 
 end
 
