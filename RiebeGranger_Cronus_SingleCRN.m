@@ -15,7 +15,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single2.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -40,9 +40,9 @@ Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
 pars = Cronus_prep{X.n}(num,DEMdata);
 
 %% Run Optimization for "real" denudation rate -------------------------- %
-% PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 D = [50,1e3];                          % Denudation min/max in mm/ka (Dmin > Weathering rate)
-thres = 0.1;                           % threshold of nuclide concentration error at which inversion has converged in % of N
+thres = 0.1;                           % threshold of nuclide concentration error for optimization in % of N
 
 % if you're looking at the soluble target mineral, there might be more than
 % one solution. This function will check for you if the parameters you

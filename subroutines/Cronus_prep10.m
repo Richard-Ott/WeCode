@@ -44,7 +44,7 @@ if isnan(num(5)), num(5) = 0.0625; end % default sample thcikness cm
 if isnan(num(6)), num(6) = 2.65;   end % default sample density g/cm³
 if isnan(num(7)), num(7) = 1;      end % default shielding 
 if isnan(num(8)), num(8) = 0;      end % default erosion rate
-if isnan(num(14)),num(14) = 0;     end % default top to sample cm
+if isnan(num(14)),num(14)= 0;      end % default top to sample cm
 % -------------------------------------------------------------------------
 
 

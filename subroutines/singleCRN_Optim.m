@@ -7,8 +7,6 @@ function [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres)
 global scaling_model
 
 v2struct(pars)   % unpack variables in parameters structure
-W = X.W;
-soil_mass = X.soil_mass;
 n = X.n;
 
 % I have to put this ugly if-else-statement here to rename the variables
@@ -25,7 +23,7 @@ tic
 % ------------------------------------------------------------------- %
 % set some constants
 pp = physpars();
-sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
+sp.depthtotop = X.soil_mass;           % set depth to soil bedrock interface
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  
 data_ind = n+8-9*(n-1);                % index I use for referencing into the nominal and uncerts arrays, because unfortunately Cronus uses different order for the data depending on the nuclide
@@ -35,7 +33,6 @@ Nobs = nominal(data_ind);              % measured concentration
 % Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyonf 100% of the soil fraction
-switch X.mode; case 'soil'; insol = X.fQzS + X.fXS; case 'bedrock'; insol = X.fQzB + X.fXB; end
 if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
 
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus

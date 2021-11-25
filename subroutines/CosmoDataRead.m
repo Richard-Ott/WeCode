@@ -23,8 +23,7 @@ switch length(sheets)
         [num,txt,~]    = xlsread(filename,find(nuclide_sheet));          % load CRN data
         [Xdata,Xtxt,~] = xlsread(filename,find(~nuclide_sheet));         % load compositional data,
         
-        X.W              = Xdata(10);                                    % Weathering rate
-        X.Wstd           = Xdata(11);
+        X.CDF          = Xdata(1);                                       % CDF of target mineral
         
         num = num(ind,:); 
         sampName = txt{ind+2,1}; 
@@ -38,27 +37,24 @@ switch length(sheets)
         num36 = num36(ind,:);
         sampName = txt10{ind+2,:}; 
         num.num10 = num10; num.num36 = num36;
+        % if isnan(Xdata(2))
+        %     X.fQzS = Xdata(1); 
+        %     X.fCaS = Xdata(2); 
+        %     X.fXS  = Xdata(3);  
+        %     X.mode = 'soil';
+        % else
+        %     X.fQzB = Xdata(1); 
+        %     X.fCaB = Xdata(2); 
+        %     X.fXB  = Xdata(3);  
+        %     X.mode = 'bedrock';
+        % end
 end
 
 Xdata = Xdata(ind,:);                                                    % select sample data
-DEMdata.method = Xtxt{ind+1,10};
-X.soil_mass    = Xdata(7);
+DEMdata.method = Xtxt{ind+1,5};
+X.soil_mass    = Xdata(2);
 global scaling_model
-scaling_model  = Xtxt{ind+1,9};       
-
-
-if isnan(Xdata(2))
-    X.fQzS = Xdata(1); 
-    X.fCaS = Xdata(2); 
-    X.fXS  = Xdata(3);  
-    X.mode = 'soil';
-else
-    X.fQzB = Xdata(1); 
-    X.fCaB = Xdata(2); 
-    X.fXB  = Xdata(3);  
-    X.mode = 'bedrock';
-end
-
+scaling_model  = Xtxt{ind+1,4};       
 
 end
 
