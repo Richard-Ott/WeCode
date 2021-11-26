@@ -15,7 +15,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Cl.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -64,23 +64,16 @@ end
 
 % outputs the values for the higher rate if there was a nonunique solution
 try
-    % disp(['Denudation rate = ' num2str(round(MAP(end))) ' mm/ka'])
     disp(['Denudation rate = ' num2str(round(MAP(end))) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
     switch X.mode
         case 'soil'
-            disp(['Fraction of quartz in bedrock fQzB = ' num2str(X_MAP(end).fQzB) ' ' char(177) ' ' num2str(round(X_uncerts(1),3))])
-            disp(['Fraction of X in bedrock fXB = ' num2str(X_MAP(end).fXB) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])  
-            disp(['Fraction of calcite in bedrock fCaB = ' num2str(X_MAP(end).fCaB) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])     
-    %         disp(['Fraction of quartz in bedrock fQzB = ' num2str(X_MAP.fQzB) ])
-    %         disp(['Fraction of X in bedrock fXB = ' num2str(X_MAP.fXB)])  
-    %         disp(['Fraction of calcite in bedrock fCaB = ' num2str(X_MAP.fCaB)])  
+            disp(['Fraction of quartz in bedrock fQzB = '  num2str(round(X_MAP(end).fQzB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
+            disp(['Fraction of X in bedrock fXB = '        num2str(round(X_MAP(end).fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])  
+            disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(X_MAP(end).fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])     
         case 'bedrock'
-            disp(['Fraction of quartz in soil fQzS = ' num2str(X_MAP(end).fQzS) ' ' char(177) ' ' num2str(round(X_uncerts(1),3)) ])
-            disp(['Fraction of X in soil fXS = ' num2str(X_MAP(end).fXS) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])
-            disp(['Fraction of calcite in soil fCaS = ' num2str(X_MAP(end).fCaS) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])
-    %         disp(['Fraction of quartz in soil fQzS = ' num2str(X_MAP.fQzS) ])
-    %         disp(['Fraction of X in soil fXS = ' num2str(X_MAP.fXS)])
-    %         disp(['Fraction of calcite in soil fCaS = ' num2str(X_MAP.fCaS)])
+            disp(['Fraction of quartz in soil fQzS = '     num2str(round(X_MAP(end).fQzS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
+            disp(['Fraction of X in soil fXS = '           num2str(round(X_MAP(end).fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
+            disp(['Fraction of calcite in soil fCaS = '    num2str(round(X_MAP(end).fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
     end
 end
 % 

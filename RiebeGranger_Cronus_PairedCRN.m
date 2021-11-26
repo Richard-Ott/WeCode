@@ -58,13 +58,13 @@ disp(['Denudation rate = ' num2str(round(MAP)) ' ' char(177) ' ' num2str(round(M
 disp(['The calculated weathering rate = ' num2str(round(WMAP)) ' ' char(177) ' ' num2str(round(W_uncert)) ' mm/ka'])
 switch X.mode
     case 'soil'
-        disp(['Fraction of quartz in bedrock fQzB = ' num2str(XMAP.fQzB) ' ' char(177) ' ' num2str(round(X_uncerts(1),3))])
-        disp(['Fraction of X in bedrock fXB = ' num2str(XMAP.fXB) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])  
-        disp(['Fraction of calcite in bedrock fCaB = ' num2str(XMAP.fCaB) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])     
+        disp(['Fraction of quartz in bedrock fQzB = '  num2str(round(XMAP.fQzB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
+        disp(['Fraction of X in bedrock fXB = '        num2str(round(XMAP.fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])  
+        disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(XMAP.fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])     
     case 'bedrock'
-        disp(['Fraction of quartz in soil fQzS = ' num2str(XMAP.fQzS) ' ' char(177) ' ' num2str(round(X_uncerts(1),3)) ])
-        disp(['Fraction of X in soil fXS = ' num2str(XMAP.fXS) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])
-        disp(['Fraction of calcite in soil fCaS = ' num2str(XMAP.fCaS) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])
+        disp(['Fraction of quartz in soil fQzS = '     num2str(round(XMAP.fQzS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2)) ])
+        disp(['Fraction of X in soil fXS = '           num2str(round(XMAP.fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
+        disp(['Fraction of calcite in soil fCaS = '    num2str(round(XMAP.fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
 end
 
 % export = input('Do you want to export your results? "y" or "n"? ','s');
