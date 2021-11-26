@@ -21,7 +21,7 @@ Nobs = [nominal10(9);nominal36(1)];       % measured concentration
 dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-k = 0.06;                                 % universal step size tuned to parameter range 0,04
+k = 0.05;                                 % universal step size tuned to parameter range 0,04
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp10.rb;                         % convert to g/cm²/ka for Cronus
@@ -174,7 +174,11 @@ while con      % run this while loop until modelled values meet stopping criteri
         disp(it)
         if ln_like_cand+ln_pprior_cand > -1 % if the algorithm gets close to the solution, reduce step size
             k = 0.005;
-        elseif nacc > 350
+            disp('close to a solution')
+        elseif ln_like_cand+ln_pprior_cand > -0.5
+            k = 0.001;
+            disp('gettin real close')
+        elseif nacc > 500
             MAP = candidate;
             error('It seems like the algorithm has problems converging and will terminate now. Rerun the algorithm, check the input, or play with the inversion parameters (e.g., k)')
         end

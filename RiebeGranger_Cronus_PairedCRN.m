@@ -14,7 +14,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Paired.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('pairedCRN_Cronus_Basin.xlsx',1);
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -35,12 +35,13 @@ end
 %% Calculate production rates ------------------------------------------- %
 
 pars10 = Cronus_prep10(num.num10,DEMdata);
+if isnan(num.num36(11)); num.num36(11) = pars10.nominal10(13); end % if the 10Be effective attenuation length was already computed, don't do the same again for 36Cl (saves time)
 pars36 = Cronus_prep36(num.num36,DEMdata);
 
 
 %% Run MCMC inversion for "real" denudation rate and weathering rate ---- %
 
-D = [5,1e3];       % Denudation rates to test, min/max in mm/ka
+D = [60,5e2];       % Denudation rates to test, min/max in mm/ka
 
 % run inversion
 [XMAP,MAP,post,WMAP] = pairedCRN_MCMC(pars10,pars36,D,X);
