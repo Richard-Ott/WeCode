@@ -6,7 +6,8 @@ function D = SBW_search(pars,X)
 global scaling_model
 
 % Define options for optimization  
-options = optimset('MaxIter',5e4,'TolFun',5e2,'TolX',0.05);            
+if X.n == 1; thres = pars.nominal10(9)/500; elseif X.n == 2; thres = pars.nominal36(1)/500;end
+options = optimset('MaxIter',5e4,'TolFun',thres,'TolX',0.05);            
 % These options may need to be tuned specifically to your problem
 % TolFun, maximum value that the function is allowed to be off, at/g
 % TolX, the tolerance value in x-direction (erosion rates in g/cm2/a), which the
