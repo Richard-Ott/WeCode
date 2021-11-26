@@ -13,6 +13,7 @@ else
 end
 
 nuclide_sheet = ~cellfun(@isempty,strfind(sheets, 'Cronus'));    % find the excel sheet that has the nuclide information
+comp_sheet = ~cellfun(@isempty,strfind(sheets, 'Composition'));  % find the excel sheet that has the compositional information
 
 switch length(sheets)
     case 2           % single CRN plus Weathering
@@ -21,7 +22,7 @@ switch length(sheets)
         
         % load data
         [num,txt,~]    = xlsread(filename,find(nuclide_sheet));          % load CRN data
-        [Xdata,Xtxt,~] = xlsread(filename,find(~nuclide_sheet));         % load compositional data,
+        [Xdata,Xtxt,~] = xlsread(filename,find(comp_sheet));         % load compositional data,
         
         X.W              = Xdata(10);                                    % Weathering rate
         X.Wstd           = Xdata(11);
