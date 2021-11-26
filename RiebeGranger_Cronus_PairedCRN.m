@@ -14,7 +14,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('pairedCRN_Cronus_Basin.xlsx',1);
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Paired.xlsx',1);
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -41,10 +41,10 @@ pars36 = Cronus_prep36(num.num36,DEMdata);
 
 %% Run MCMC inversion for "real" denudation rate and weathering rate ---- %
 
-D = [60,5e2];       % Denudation rates to test, min/max in mm/ka
+D = [50,5e2];       % Denudation rates to test, min/max in mm/ka 
 
 % run inversion
-[XMAP,MAP,post,WMAP] = pairedCRN_MCMC(pars10,pars36,D,X);
+[XMAP,MAP,WMAP] = pairedCRN_Optim(pars10,pars36,D,X);
 
 % OPTIONAL %%%%%%%%
 % estimate uncertainty, this take quite some time to calculate, therefore I
@@ -53,35 +53,18 @@ D = [60,5e2];       % Denudation rates to test, min/max in mm/ka
 
 %% REPORT RESULTS ------------------------------------------------------- %
 
-% investigate the MCMC chains (optional, just to check the MCMC convergence)
-figure()
-subplot(1,3,1); plot(post(:,1),'LineWidth',1.5)
-xlabel('iteration'); ylabel('fraction Qz'); ylim([0,1])
-subplot(1,3,2); plot(post(:,2),'LineWidth',1.5)
-xlabel('iteration'); ylabel('Denudation rate mm/ka'); ylim(D)
-subplot(1,3,3); plot(post(:,3),'LineWidth',1.5)
-xlabel('iteration'); ylabel('log posterior probability')
-
 % Report the values %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% disp(['Denudation rate = ' num2str(round(MAP(2))) ' mm/ka'])
-% disp(['The calculated weathering rate = ' num2str(round(W)) ' mm/ka'])
-disp(['Denudation rate = ' num2str(round(MAP(2))) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
+disp(['Denudation rate = ' num2str(round(MAP)) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
 disp(['The calculated weathering rate = ' num2str(round(WMAP)) ' ' char(177) ' ' num2str(round(W_uncert)) ' mm/ka'])
 switch X.mode
     case 'soil'
         disp(['Fraction of quartz in bedrock fQzB = ' num2str(XMAP.fQzB) ' ' char(177) ' ' num2str(round(X_uncerts(1),3))])
         disp(['Fraction of X in bedrock fXB = ' num2str(XMAP.fXB) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])  
         disp(['Fraction of calcite in bedrock fCaB = ' num2str(XMAP.fCaB) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])     
-%         disp(['Fraction of quartz in bedrock fQzB = ' num2str(X_MAP.fQzB) ])
-%         disp(['Fraction of X in bedrock fXB = ' num2str(X_MAP.fXB)])  
-%         disp(['Fraction of calcite in bedrock fCaB = ' num2str(X_MAP.fCaB)])  
     case 'bedrock'
         disp(['Fraction of quartz in soil fQzS = ' num2str(XMAP.fQzS) ' ' char(177) ' ' num2str(round(X_uncerts(1),3)) ])
         disp(['Fraction of X in soil fXS = ' num2str(XMAP.fXS) ' ' char(177) ' ' num2str(round(X_uncerts(2),3))])
         disp(['Fraction of calcite in soil fCaS = ' num2str(XMAP.fCaS) ' ' char(177) ' ' num2str(round(X_uncerts(3),3))])
-%         disp(['Fraction of quartz in soil fQzS = ' num2str(X_MAP.fQzS) ])
-%         disp(['Fraction of X in soil fXS = ' num2str(X_MAP.fXS)])
-%         disp(['Fraction of calcite in soil fCaS = ' num2str(X_MAP.fCaS)])
 end
 
 % export = input('Do you want to export your results? "y" or "n"? ','s');

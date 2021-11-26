@@ -1,4 +1,5 @@
 function [X,MAP,post] = singleCRN_MCMC(pars,D,X,err)
+% (not recommended, use singleCRN_Optim instead, it is much faster)
 % Calculates the "real" denudation rate from a nuclide measurement, the
 % bedrock or soil chemistry and a weathering rate.
 % The solution is found through a MCMC algorithm.

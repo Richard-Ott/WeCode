@@ -1,5 +1,5 @@
 function Ntot10 = N10_SBW_forward(pars,scaling_model,soil_mass,D,W)
-% This functions computes the average soil nuclide concentration in a soil
+% This functions computes the average soil 10Be concentration in a soil
 % with weathering at the soil-bedrock interface.
 % Concentrations computed with Cronus.
 % Richard Ott, 2021

@@ -1,6 +1,17 @@
 function pars = solCRN_check(pars,D,X,err,plotFlag)
 % Checks if the nuclide concentration for the soluble mineral is below the
 % concentration for Dmin, or below the maximum possible concentration Nmax.
+% Input: 
+%       - pars: Cronus parameters for CRN calculation see (Cronus_prepXX.m)
+%       - D: [Dmin, Dmax] defines search boundaries for denudation rate
+%           in mm/ka
+%       - X: compositional structure (see CosmoDataRead.m)
+%       - err: threshold of nuclide concentration error at which 
+%           optimization has converged in % of N
+%       - plotFlag: 1 or 0, do you want to see a plot of nuclide
+%       concentration vs. denudation rate. This helps you to see how close
+%       you are to the zone of 2 solutions for N36.
+%
 % Richard Ott, 2021
 
 global scaling_model

@@ -1,7 +1,20 @@
 function [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres)
 % Calculates the "real" denudation rate from a nuclide measurement, the
-% bedrock or soil chemistry and a weathering rate.
+% bedrock or soil chemistry, and a weathering rate.
 % The solution is found through the fminsearch optimization algorithm.
+% % Input: 
+%           - pars: Cronus parameters for CRN computation (see 
+%           Cronus_prepXX.m)
+%           - D: [Dmin, Dmax] defines search boundaries for denudation rate
+%           in mm/ka
+%           - X: compositional structure (see CosmoDataRead.m)
+%           - thres: threshold of nuclide concentration error at which 
+%           optimization has converged in % of N
+% Output:   
+%           - X_MAP: compositional structure containing also the predicted
+%           composition of the non-input parts (soil or bedrock)
+%           - MAP: denudation rate in mm/ka
+%
 % Richard Ott, 2021
 
 global scaling_model

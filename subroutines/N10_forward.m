@@ -1,5 +1,5 @@
 function [Ntot10, D_QzS] = N10_forward(pp,sp10,sf10,cp10,maxage,scaling_model,soil_mass,D,X)
-% This functions computes the average soil nuclide concentration in a soil
+% This functions computes the average soil 10Be concentration in a soil
 % with differential weathering of 2 minerals (here assumed to be quartz and
 % calcite). 
 % Concentrations computed with Cronus.

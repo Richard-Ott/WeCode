@@ -1,6 +1,8 @@
 function D = SBW_search(pars,X)
 % Calculates the corrected denudation rate in case of soil-bedrock
 % interface weathering
+% In: pars - Cronus parameters (see Cronus_prepXX.m), X - composition
+% Out: denudation rate (mm/ka)
 % Richard Ott, 2021
 
 global scaling_model

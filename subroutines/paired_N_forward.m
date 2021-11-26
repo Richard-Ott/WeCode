@@ -1,10 +1,27 @@
-function [Ntot10, Ntot36, D, Ws] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,D,X)
+function [Ntot10, Ntot36, D, Ws, Xcur] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,x0,X)
 % This functions computes the average soil nuclide concentration in a soil
 % with differential weathering of 2 minerals (here assumed to be quartz and
 % calcite). 
 % Concentrations computed with Cronus.
+% x0 = [fraction quartz, denudation rate];
+% X - input composition (without the other half that needs to be computed)
+% otherwise standard Cronus input for both nuclides
 % Richard Ott, 2021
 
+
+D = x0(2);  % denudation rate
+
+Xcur = X;
+switch X.mode
+    case 'soil'
+        Xcur.fQzB = x0(1); 
+        Xcur.fXB  = X.fXS * (x0(1)/X.fQzS);    % the other insoluble mineral should behave like quartz
+        Xcur.fCaB = 1 - x0(1) - Xcur.fXB;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
+    case 'bedrock'
+        Xcur.fQzS = x0(1); 
+        Xcur.fXS  = X.fXB * (x0(1)/X.fQzB);    % the other insoluble mineral should behave like quartz
+        Xcur.fCaS = 1 - x0(1) - Xcur.fXS;     % after subtracting the insoluble minerals, the rest should be the soluble mineral
+end
 
 % set current denudation rate
 sp10.epsilon = D;        
@@ -33,10 +50,10 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * X.fQzS/X.fQzB;  
-Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;  
+Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * Xcur.fQzS/Xcur.fQzB;  
+Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * Xcur.fCaS/Xcur.fCaB;  
 
-Es = X.fQzB/X.fQzS * D;  % soil erosion
-Ws = D-Es;               % soil weathering
+Es = Xcur.fQzB/Xcur.fQzS * D;  % soil erosion
+Ws = D-Es;                     % soil weathering
 end
 

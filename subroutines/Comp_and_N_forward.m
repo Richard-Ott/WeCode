@@ -1,7 +1,7 @@
 function [Nm] = Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,D,X)
-% Calculates the "real" denudation rate from a nuclide measurement, the
-% bedrock or soil chemistry and a weathering rate.
-% The solution is found through a MCMC algorithm.
+% Calculates the forward models for a nuclide given a denudation rate D, a
+% weathering rate X.W, a input composition X, and the standard Cronus CRN
+% sample parameters. Output is the modelled nuclide concentration.
 % Richard Ott, 2021
 
 global scaling_model

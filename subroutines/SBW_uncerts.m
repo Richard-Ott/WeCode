@@ -1,5 +1,16 @@
 function D_uncerts = SBW_uncerts(pars,X,D)
-% Richard Ott, 2021
+% Calculates the uncertainty in denudation rate in case of soil-bedrock 
+% interface weathering.
+% This script only includes uncertainties that arise from the  nuclide
+% concentration, the weathering rate, and the spallation production.
+% Input: 
+%       - pars: Cronus parameters for CRN calculation see (Cronus_prepXX.m)
+%       - D: best-fit denudation rate (mm/ka)
+%       - X: compositional structure (see CosmoDataRead.m)
+% Output: 
+%       - D_uncerts: Uncertainty denudation rate (mm/ka)
+%
+% Richard ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
 global scaling_model

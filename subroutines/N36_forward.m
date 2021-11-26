@@ -1,5 +1,5 @@
 function [Ntot36, D_CaS] = N36_forward(pp,sp36,sf36,cp36,maxage,scaling_model,soil_mass,D,X)
-% This functions computes the average soil nuclide concentration in a soil
+% This functions computes the average soil 36Cl concentration in a soil
 % with differential weathering of 2 minerals (here assumed to be quartz and
 % calcite). 
 % Concentrations computed with Cronus.

@@ -1,7 +1,8 @@
 function varargout = getBasins(DEM,x,y,coordType)
-% delineate drainage basins in DEM based on x,y location
-% coordType either 'map' or 'll' which stands for lat-lon
-% Output drainage basin GRIDobj as derived from drainagebasins TT function.
+% delineate drainage basins in DEM (in UTM coordinates) based on x,y
+% location.
+% coordType, either 'map' or 'll' which stands for lat-lon
+% Output: drainage basin GRIDobj as derived from drainagebasins TT function.
 % Richard Ott, 2021
 
 % compute flow of DEM

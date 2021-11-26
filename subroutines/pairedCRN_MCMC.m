@@ -1,4 +1,5 @@
 function [X,MAP,post,W] = pairedCRN_MCMC(pars10,pars36,D,X)
+% (not recommended, use singleCRN_Optim instead, it is much faster)
 % Calculates the the "real" landscape denudation rate from a paired nuclide
 % measurement and soil or bedrock chemistry data.
 % Inversion is perfomred with a MCMC.
@@ -22,10 +23,11 @@ dNobs =[uncerts10(9);uncerts36(1)];       %  uncertainty of observation
 
 % set inversion parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 k = 0.05;                                 % universal step size tuned to parameter range 0,04
+Cobs = diag(dNobs.^2);                    % covariance matrix from sigma
+Cobsinv = inv(Cobs);                      % inverse of covariance matrix
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp10.rb;                         % convert to g/cm²/ka for Cronus
-ln_pprior_cur = 0;                        % only flat priors 
 
 switch X.mode
     case 'soil'
@@ -92,9 +94,9 @@ switch X.mode
 end
 
 [N10m,N36m] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,m0(2),Xcur);
-obs_err     = [N10m,N36m]' - Nobs;                          % observational error
-ln_like_cur = (-1/2)*sum((obs_err./dNobs).^2);              % ln likelihood of model
-ln_prob_cur = ln_like_cur + ln_pprior_cur;                  % ln probability model
+res_current = 1e20;    % residual inital guess
+restot = (Nobs(:)-[N10m;N36m])'*Cobsinv*(Nobs(:)-[N10m;N36m]);  % observational error
+rfrac = exp(-0.5*restot)/exp(-0.5*res_current);
 
 % MAIN LOOP OF INVERSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 current = m0;
@@ -149,33 +151,22 @@ while con      % run this while loop until modelled values meet stopping criteri
 
     
     [N10m,N36m,~,~] = paired_N_forward(pp,sp10,sp36,sf10,sf36,cp10,cp36,maxage10,maxage36,scaling_model,soil_mass,candidate(2),Xcur);
-    obs_err     = [N10m,N36m]' - Nobs;                          % observational error
-    ln_like_cand = (-1/2)*sum((obs_err./dNobs).^2);             % ln likelihood of model    
-    lr1 = (-1/2)*sum((candidate-current).^2./(k .*range_in).^2);
-    lr2 = (-1/2)*sum((current-candidate).^2./(k .*range_in).^2);
-    
-    ln_alpha = ln_like_cand + ln_pprior_cand +lr1 - ln_pprior_cur - lr2 - ln_like_cur; % probability candidate, no need to log pprior
-    
-    if (ln_alpha > 0)
-        ln_alpha = 0;
-    end
+    restot = (Nobs(:)-[N10m;N36m])'*Cobsinv*(Nobs(:)-[N10m;N36m]);  % observational error
+    rfrac = exp(-0.5*restot)/exp(-0.5*res_current);
+    alpha = rand(1); 
 
-    % Generate a U(0,1) random number and take its logarithm.
-    ln_t = log(rand());
-    
         % Accept or reject the step.
-    if (ln_t < ln_alpha)
+    if rfrac > alpha
         % Accept the step.
         current = candidate;
-        ln_like_cur = ln_like_cand;
-        ln_pprior_cur = ln_pprior_cand;
+        res_current = restot; % residuals 
         nacc = nacc + 1;
-        post(nacc,:) = [candidate; ln_like_cand+ln_pprior_cand];
+        post(nacc,:) = [candidate; restot];
         disp(it)
-        if ln_like_cand+ln_pprior_cand > -1 % if the algorithm gets close to the solution, reduce step size
+        if restot < 1 % if the algorithm gets close to the solution, reduce step size
             k = 0.005;
             disp('close to a solution')
-        elseif ln_like_cand+ln_pprior_cand > -0.5
+        elseif restot < 0.5
             k = 0.001;
             disp('gettin real close')
         elseif nacc > 500
@@ -184,7 +175,7 @@ while con      % run this while loop until modelled values meet stopping criteri
         end
     end
     
-    if sum(abs(obs_err) < err_max) == 2   % if both modelled nuclide concentration are close to measured values
+    if sum(abs(Nobs(:)-[N10m;N36m]) < err_max) == 2   % if both modelled nuclide concentration are close to measured values
         con = 0;                          % stop loop
         MAP = candidate;
     else

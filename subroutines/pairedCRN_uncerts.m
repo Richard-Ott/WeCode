@@ -1,5 +1,23 @@
 function [MAP_uncerts, X_uncerts, W_uncert] = pairedCRN_uncerts(pars10,pars36,D,X,XMAP,MAP,WMAP)
-% Richard Ott, 2021
+% Calculates the uncerttainty in denudation rate, composition, and
+% weathering rate from paired nuclide measurements.
+% This script only includes uncertainties that arise from the two nuclide
+% concentrations, and their spallation production factors.
+% Input: 
+%       - pars10 & pars 36: Cronus parameters for CRN calculation see
+%       (Cronus_prepXX.m)
+%       - D: [Dmin, Dmax] defines search boundaries for denudation rate
+%           in mm/ka
+%       - X: compositional structure (see CosmoDataRead.m)
+%       - XMAP: best fit compositon
+%       - MAP: best-fit denudation rate (mm/ka)
+%       - WMAP: best-fit weathering rate (mm/ka)
+% Output: 
+%       - MAP_uncerts: Uncertainty denudation rate (mm/ka)
+%       - X_uncerts:   Uncertainty composition 
+%       - W_uncerts:   Uncertainty weathering rate (mm/ka)
+%
+% Richard ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
 global scaling_model
@@ -16,25 +34,17 @@ for i=1:2
         parsC10.nominal10(9) = pars10.nominal10(9) +  thisdelta;    % add 10% to total N
         parsC10.sp10.concentration10 = parsC10.nominal10(9);        % update sample parameters
         parsC10.cp10.N10m = parsC10.nominal10(9);                   % update computed parameters 
-        parsC10.uncertFlag =1;
     else
         thisdelta=0.05*pars36.nominal36(1);
         parsC36.nominal36(1) = pars36.nominal36(1) +  thisdelta; % if W is close to D, then the addition might lead to problems and one should acutally subtract here
         parsC36.sp36.concentration36 = parsC36.nominal36(1);
         parsC36.cp36.N36m = parsC36.nominal36(1);
-        parsC36.uncertFlag =1;
     end
     
-    % run inversion, try to start close to final value to speed up
-    % inversion, if it does not work-use full range
-    try
-        [dX,deltaerate,~,deltaW] = pairedCRN_MCMC(parsC10,parscC36,[MAP(2)- MAP(2)/3, ;MAP(2)+MAP(2)/3],X); % find erate and composition
-    catch
-        [dX,deltaerate,~,deltaW] = pairedCRN_MCMC(parsC10,parsC36,D,X);
-    end
-    
+    [dX,deltaerate,deltaW] = pairedCRN_Optim(parsC10,parsC36,D,X);
+
     % find differences
-    deratei =(deltaerate(2) - MAP(2))/thisdelta;
+    deratei =(deltaerate - MAP)/thisdelta;
     deltaWi =(deltaW - WMAP)/thisdelta;
     switch X.mode
         case 'soil'
@@ -68,7 +78,7 @@ for i = 1:2
         deltacp=comppars1026(deltapp,pars10.sp10,pars10.sf10,pars10.maxdepth10);% new cp
         parsC10 = pars10;
         parsC10.cp10 = deltacp;
-        parsC10.pp = deltapp; parsC10.uncertFlag =1;
+        parsC10.pp = deltapp; 
     else
         deltapp = pars36.pp;
         thisdelta = 0.1*abs(pars36.pp.PsCa0);
@@ -76,19 +86,14 @@ for i = 1:2
         deltacp=comppars36(deltapp,pars36.sp36,pars36.sf36,pars36.maxdepth36);% new cp
         parsC36 = pars36;
         parsC36.cp36 = deltacp;
-        parsC36.pp = deltapp; parsC36.uncertFlag =1;
+        parsC36.pp = deltapp; 
     end
     
-    % run inversion, try to start close to final value to speed up
-    % inversion, if it does not work-use full range
-    try
-        [dX,deltaerate,~,deltaW] = pairedCRN_MCMC(parsC10,parsC36,[MAP(2)- MAP(2)/3, ;MAP(2)+MAP(2)/3],X);
-    catch
-        [dX,deltaerate,~,deltaW] = pairedCRN_MCMC(parsC10,parsC36,D,X);
-    end
+
+    [dX,deltaerate,deltaW] = pairedCRN_Optim(parsC10,parsC36,D,X);
     
     % differences
-    derateps  =(deltaerate(2)-MAP(2))/ thisdelta;
+    derateps  =(deltaerate-MAP)/ thisdelta;
     deltaWi   = (deltaW - WMAP)/thisdelta;
     % compositional uncert
     switch X.mode

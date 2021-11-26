@@ -1,5 +1,21 @@
 function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres)
-% Richard Ott, 2021
+% Calculates the uncertainty in denudation rate and composition from a
+% nuclide measurement with weathering rate.
+% This script only includes uncertainties that arise from the nuclide
+% concentrations, weathering rate, and the spallation production factor.
+% Input: 
+%       - pars: Cronus parameters for CRN calculation see (Cronus_prepXX.m)
+%       - D: [Dmin, Dmax] defines search boundaries for denudation rate
+%           in mm/ka
+%       - X: compositional structure (see CosmoDataRead.m)
+%       - XMAP: best fit compositon
+%       - MAP: best-fit denudation rate (mm/ka)
+%       - WMAP: best-fit weathering rate (mm/ka)
+% Output: 
+%       - MAP_uncerts: Uncertainty denudation rate (mm/ka)
+%       - X_uncerts:   Uncertainty composition 
+%
+% Richard ott, 2021
 
 wb = waitbar(0,'calculating uncertainties...');
 global scaling_model
