@@ -47,7 +47,7 @@ for i=1:2
             parsC.cp10.N10m = parsC.nominal10(9);                   % update computed parameters 
         elseif Xcur.n == 2
             thisdelta=0.05*pars.nominal36(1);                  % for the soluble mineral and weathering I rather lower the value because otherwise you quickly run into a no-go zone
-            if pars.nonunique && pars.nominal36(1)+thisdelta > pars.Nmax
+            if isfield(pars,'nonunique') && pars.nominal36(1)+thisdelta > pars.Nmax
                 parsC.nominal36(1) = pars.nominal36(1) -  thisdelta;
             else
                 parsC.nominal36(1) = pars.nominal36(1) +  thisdelta;

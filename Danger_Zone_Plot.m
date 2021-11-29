@@ -1,7 +1,8 @@
 % The script calculates the "danger zone" for a soluble target mineral. The
-% " danger zone" is defined as the area where increased denudation does not
-% lead to a decrease in nuclide concentration in the target mineral
-% anymore. 
+% "danger zone" is defined as either (1) the denudation rates for which 
+% increased denudation does not lead to a decrease in nuclide concentration
+% in the target mineral anymore (D_Nmax), or (2) the denudation rates that
+% have a unique parameter combination (D_unique).
 % Richard Ott, 2021
 %
 % the current version is written for 10Be and 36Cl, could easily be
@@ -14,8 +15,8 @@ addpath '.\subroutines'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Cl.xlsx');
-soil_masses = 10:1:200;      % in g/cm²
-W           = 10:1:100;      % soil weathering rate of soluble mineral in mm/ka
+soil_masses = 20:10:200;      % in g/cm²
+W           = 10:10:100;      % soil weathering rate of soluble mineral in mm/ka
 %% Calculate production rates ------------------------------------------- %
 
 Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
@@ -27,15 +28,33 @@ D = [10,1e3];                          % Denudation min/max in mm/ka (Dmin > Wea
 thres = 0.1;                           % threshold of nuclide concentration error at which inversion has converged in % of N
 
 D_Nmax = nan(length(W),length(soil_masses));
+D_unique = nan(size(D_Nmax));
 for i = 1:length(soil_masses)
     for j = 1:length(W)
         X.soil_mass = soil_masses(i);
         X.W = W(j);
+        % compute D_Nmax
         [D_Nmax(j,i), ~] = solCRN_D_Nmax(pars,D,X,thres);
+        try
+            D_unique(j,i) = solCRN_D_unique(pars,D,X);
+        catch % only possible if bedrock chemistry provided
+            if X.n == 1
+                D_unique(j,i) = W(j)/10*sp10.rb/X.fCaB;
+            elseif X.n == 2
+                D_unique(j,i) = W(j)/10*sp36.rb/X.fCaB;
+            end
+        end
     end
 end
 
-if X.n == 1; D_Nmax = D_Nmax./pars.sp10.rb*10; elseif X.n == 2; D_Nmax = D_Nmax./pars.sp36.rb*10;end % convert results to mm/ka
+if X.n == 1
+    D_Nmax = D_Nmax./pars.sp10.rb*10;
+    D_unique = D_unique./pars.sp10.rb*10;
+elseif X.n == 2
+    D_Nmax = D_Nmax./pars.sp36.rb*10;
+    D_unique = D_unique./pars.sp36.rb*10;
+end % convert results to mm/ka
+save('Danger_Zone_Plotdata.mat')
 
 %% Plot the danger zone
 
@@ -46,8 +65,19 @@ cmap = struct2cell(cmap);
 cmap = cmap{1};
 imagesc(soil_masses,W,D_Nmax); hold on
 colormap(cmap)
-% contour(X,Y,p_err,'k','LevelList',[-10:5:100])
-% contour(soil_masses,W,D_Nmax,'k','ShowText','on','LevelList',[0:10:200],'LabelSpacing',500)
+% contour(XX,YY,D_Nmax,'k','LevelList',[-10:5:100])
+contour(soil_masses,W,D_Nmax,'k','ShowText','on','LevelList',[0:10:200],'LabelSpacing',500)
+set(gca,'YDir','normal');
+xlabel('soil mass g/cm²');
+ylabel('weathering rate mm/ka');
+h = colorbar;
+ylabel(h, 'Denudation rate mm/ka')
+
+subplot(1,2,2)
+imagesc(soil_masses,W,D_unique); hold on
+colormap(cmap)
+% contour(XX,YY,D_Nmax,'k','LevelList',[-10:5:100])
+contour(soil_masses,W,D_unique,'k','ShowText','on','LevelList',[0:10:200],'LabelSpacing',500)
 set(gca,'YDir','normal');
 xlabel('soil mass g/cm²');
 ylabel('weathering rate mm/ka');

@@ -9,7 +9,7 @@ function [Ntot36, D_CaS] = N36_forward(pp,sp36,sf36,cp36,maxage,scaling_model,so
 % set current denudation rate
 sp36.epsilon = D;        
 
-N_SBI36 = predN36  (pp,sp36,sf36,cp36,maxage,scaling_model,1);  % 36Cl concentration at soil-bedrock interface
+N_SBI36 = predN36(pp,sp36,sf36,cp36,maxage,scaling_model,1);  % 36Cl concentration at soil-bedrock interface
     
 % Calculate average production rate within soil
 sf36.currentsf=getcurrentsf(sf36,0,scaling_model,'cl');
@@ -26,7 +26,6 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 
 % final average soil mineral soil concentration
 Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;  
-test = P_avg36 * (soil_mass/(D/1000)) * X.fCaS/X.fCaB;
 
 D_CaS = D * X.fCaB/X.fCaS;
 
