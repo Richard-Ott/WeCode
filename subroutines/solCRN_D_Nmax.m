@@ -42,14 +42,8 @@ forward_model = {@N10_forward,@N36_forward};% to avoid opening more switch state
 %% Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyond 100% of the soil fraction
-switch X.mode
-    case 'soil'
-        insol = X.fQzS + X.fXS; 
-        if insol > D(1)/(D(1)-W); D(1) = W/(1-(1/insol)); end
-    case 'bedrock'
-        insol = X.fQzB + X.fXB; 
-        if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
-end
+switch X.mode; case 'soil'; insol = X.fQzS + X.fXS; case 'bedrock'; insol = X.fQzB + X.fXB; end
+if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
 
 %% Identify maximum possible nuclide concentration for this sample and model
 tolerance = Nobs*err/100;            % in at/g for nuclides
