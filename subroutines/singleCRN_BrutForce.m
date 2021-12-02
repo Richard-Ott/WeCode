@@ -35,9 +35,14 @@ dNobs =uncerts(data_ind);              % uncertainty of observation
 % Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyonf 100% of the soil fraction
-switch X.mode; case 'soil'; insol = X.fQzS + X.fXS; case 'bedrock'; insol = X.fQzB + X.fXB; end
-if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
-        
+switch X.mode
+    case 'soil'
+        insol = X.fQzS + X.fXS; 
+        if insol > D(1)/(D(1)-W); D(1) = W/(1-(1/insol)); end
+    case 'bedrock'
+        insol = X.fQzB + X.fXB; 
+        if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
+end      
 
 % PRIORS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus
