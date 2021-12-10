@@ -7,6 +7,7 @@
 clc
 clear 
 close all
+addpath '.\subroutines'
 
 %% PRODUCTION RATES ----------------------------------------------------- %
 p = 1013.25;         % hPa, standard atmosphere
@@ -16,7 +17,7 @@ Ps36  = 52.16;       % 36Cl spallation from Ca, Marrero et al., 2016
 % 10Be Muons --------
 mindepth = 0; maxdepth = 7800; % g/cm2
 f10_star = 0.00191;   % Model 1A, alpha=1, Balco 2017
-Natoms = 2.006e22;  % Oxygen atoms pr gram Quartz
+Natoms   = 2.006e22;  % Oxygen atoms pr gram Quartz
 sigma0Be = 0.280e-30; % model 1A, alpha=1, Balco 2017
 
 p_muons=p_rate_calc2(f10_star,Natoms,sigma0Be,p,mindepth,maxdepth);
@@ -90,7 +91,7 @@ for n = 1:2
     % contour(X,Y,p_err,'k','LevelList',[-10:5:100])
     contour(X,Y,p_err,'k','ShowText','on','LevelList',[-50:10:250],'LabelSpacing',500)
     set(gca,'YDir','normal');
-    xlabel('X_{soil}/X_{rock}');
+    xlabel('X_{soil}/X_{bedrock}');
     ylabel('Soil mass (g/cm^2)');
     h = colorbar;
     ylabel(h, 'Percentage error')
