@@ -32,7 +32,7 @@ single nuclide measurement (soluble or insoluble target mineral), given that eit
 bedrock or soil chemistry is provided, and the overall weathering rate is known. It uses
 a built-in optimization algorithm to find the denudatoin rate.
 
-- Soil_Bedrock_weathering: This script calculates denudation rates for cases where weathering
+- Soil_Bedrock_weathering (IN DEVELOPMENT): This script calculates denudation rates for cases where weathering
 concentrates along the soil-bedrock interface. To solve the equations it uses a the fminsearch
 Matlab optimization algorithm. Run this script with one of the single nuclide test files.
 
