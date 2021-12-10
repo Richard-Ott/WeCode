@@ -89,9 +89,10 @@ MAP = MAP/sp.rb*10;  % convert back to mm/ka
 varargout{1} = MAP;
 if nargout == 2
     % run forward model one more time for compositional output
-    X_MAP = cell(1,2);
-    [~,X_MAP{1}] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(1),X);
-    [~,X_MAP{2}] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2),X);
+    [~,X_MAP] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(1)/10*sp.rb,X);
+    if exist('nonunique')
+        [~,X_MAP(2)] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2)/10*sp.rb,X);
+    end
 
     varargout{2} = X_MAP;
 end
