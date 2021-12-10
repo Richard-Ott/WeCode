@@ -1,4 +1,4 @@
-function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres)
+function varargout = singleCRN_uncerts(pars,D,X,MAP,thres,varargin)
 % Calculates the uncertainty in denudation rate and composition from a
 % nuclide measurement with weathering rate.
 % This script only includes uncertainties that arise from the nuclide
@@ -7,16 +7,19 @@ function [MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,XMAP,MAP,thres)
 %       - pars: Cronus parameters for CRN calculation see (Cronus_prepXX.m)
 %       - D: [Dmin, Dmax] defines search boundaries for denudation rate
 %           in mm/ka
-%       - X: compositional structure (see CosmoDataRead.m)
-%       - XMAP: best fit compositon
+%       - X: compositional structure (see CosmoDataRead.m
 %       - MAP: best-fit denudation rate (mm/ka)
 %       - WMAP: best-fit weathering rate (mm/ka)
+%       - OPTIONAL: XMAP -> best fit compositon
 % Output: 
 %       - MAP_uncerts: Uncertainty denudation rate (mm/ka)
 %       - X_uncerts:   Uncertainty composition 
-%
+%       --> only MAP_uncerts for X.mode == noComp (no composition defined)
 % Richard ott, 2021
 
+if nargin == 6
+    XMAP = varargin{1};
+end
 wb = waitbar(0,'calculating uncertainties...');
 global scaling_model
 
@@ -61,7 +64,11 @@ for i=1:2
     end
     
     % run optimization
-    [deltaerate,dX] = singleCRN_Optim(parsC,bounds,Xcur,thres); % find erate and composition
+    if strcmpi(X.mode,'noComp')
+        deltaerate = singleCRN_Optim(parsC,bounds,Xcur,thres); % find erate and composition
+    else
+        [deltaerate,dX] = singleCRN_Optim(parsC,bounds,Xcur,thres); % find erate and composition
+    end
     if isfield(pars,'nonunique'); [deltaerate,ind] = max(deltaerate); dX = dX(ind);end
 
     deratei=(deltaerate - MAP)/thisdelta;
@@ -71,6 +78,8 @@ for i=1:2
             dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
         case 'bedrock'
             dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
+        case 'noComp'
+            dXi = [0,0,0];  % dummy variables
     end
     
     if i == 1 % N uncertainty
@@ -103,7 +112,11 @@ if X.n == 1
     parsC.pp = deltapp; parsC.uncertFlag =1;
     
     % run optimization
-    [deltaerate,dX] = singleCRN_Optim(parsC,bounds,X,thres);
+    if strcmpi(X.mode,'noComp')
+        deltaerate = singleCRN_Optim(parsC,bounds,X,thres);
+    else
+        [deltaerate,dX] = singleCRN_Optim(parsC,bounds,X,thres);
+    end
 
     deratepsBe  =(deltaerate-MAP)/thisdelta;
     % compositional uncert
@@ -112,6 +125,8 @@ if X.n == 1
             dXi = [dX.fQzB - XMAP.fQzB, dX.fCaB - XMAP.fCaB, dX.fXB - XMAP.fXB] ./thisdelta;
         case 'bedrock'
             dXi = [dX.fQzS - XMAP.fQzS, dX.fCaS - XMAP.fCaS, dX.fXS - XMAP.fXS] ./thisdelta;
+        case 'noComp'
+            dXi = [0,0,0];  % dummy variables
     end
     X_uncert    = X_uncert +   dXi.^2 .* pars.pp.sigmaPsBe.^2;  
     uncertainty = uncertainty+ deratepsBe^2*pars.pp.sigmaPsBe^2;
@@ -148,6 +163,12 @@ switch X.mode
     case 'bedrock'
         X_uncerts       = sqrt(X_uncert);
 end
+
+varargout{1} = MAP_uncerts;
+if nargout == 2
+    varargout{2} = X_uncerts;
+end
+    
 
 close(wb)
 

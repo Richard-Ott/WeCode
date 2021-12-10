@@ -1,4 +1,4 @@
-function [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres)
+function varargout = singleCRN_Optim(pars,D,X,thres)
 % Calculates the "real" denudation rate from a nuclide measurement, the
 % bedrock or soil chemistry, and a weathering rate.
 % The solution is found through the fminsearch optimization algorithm.
@@ -14,7 +14,7 @@ function [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres)
 %           - X_MAP: compositional structure containing also the predicted
 %           composition of the non-input parts (soil or bedrock)
 %           - MAP: denudation rate in mm/ka
-%
+%           --> only MAP output for X.mode = noComp (no composition defined)
 % Richard Ott, 2021
 
 global scaling_model
@@ -48,7 +48,7 @@ Nobs = nominal(data_ind);              % measured concentration
 % Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyonf 100% of the soil fraction
-switch X.mode; case 'soil'; insol = X.fQzS + X.fXS; case 'bedrock'; insol = X.fQzB + X.fXB; end
+switch X.mode; case 'soil'; insol = X.fQzS + X.fXS; case 'bedrock'; insol = X.fQzB + X.fXB; case 'noComp'; insol= -1; end
 if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
 
 
@@ -57,7 +57,7 @@ W = W/10*sp.rb;                        % convert to g/cm²/ka
 tolerance = Nobs*thres/100;            % in at/g for nuclides
 
 % Define options for optimization  
-options = optimset('MaxIter',5e4,'TolFun',tolerance,'TolX',0.05);            
+options = optimset('MaxIter',5e4,'TolFun',tolerance);            
 % These options may need to be tuned specifically to your problem
 % TolFun, maximum value that the function is allowed to be off, at/g
 % TolX, the tolerance value in x-direction (erosion rates in g/cm2/a), which the
@@ -67,11 +67,13 @@ options = optimset('MaxIter',5e4,'TolFun',tolerance,'TolX',0.05);
 x0model = {@be10erateraw, @cl36erateraw};
 spini = sp; spini.depthtotop = 0;            % set depth to top = 0 for initial erosion rate guess
 x0 = x0model{n}(pp,spini,sf,cp,scaling_model,0);
-fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
+if strcmpi(X.mode,'noComp')
+    fun = @(x) abs(N10_forward_noComp(pp,sp,sf,cp,maxage,scaling_model,soil_mass,x,X) - Nobs);
+else
+    fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
+end
 [MAP,~] = fminsearchbnd(fun,x0,D(1),D(2),options);
 
-% run forward model one more time for compositional output
-[~,X_MAP] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP,X);
 toc
 
 % for soluble mineral with a nuclide concentration that is nonunique, we
@@ -85,5 +87,11 @@ end
 
 MAP = MAP/sp.rb*10;  % convert back to mm/ka
 
+varargout{1} = MAP;
+if nargout == 2
+    % run forward model one more time for compositional output
+    [~,X_MAP] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP,X);
+    varargout{2} = X_MAP;
+end
 end
 

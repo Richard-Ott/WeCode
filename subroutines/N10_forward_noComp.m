@@ -8,7 +8,7 @@ function Ntot10 = N10_forward_noComp(pp,sp10,sf10,cp10,maxage,scaling_model,soil
 
 % set current denudation rate
 sp10.epsilon = D;        % g/cm2/ka
-W = X.W/10*sp.rb;        % convert to g/cm²/ka 
+W = X.W/10*sp10.rb;        % convert to g/cm²/ka 
 
 N_SBI10 = predN1026(pp,sp10,sf10,cp10,maxage,scaling_model,1);  % 10Be concentration at soil-bedrock interface 
     
@@ -28,6 +28,6 @@ P_avg10 = mean(Pz10);   % 10Be average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (D/D-W);  
+Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (D/(D-W));  
 end
 

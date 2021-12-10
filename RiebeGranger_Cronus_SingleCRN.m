@@ -54,12 +54,14 @@ end
 
 % run inversion
 [MAP,X_MAP] = singleCRN_Optim(pars,D,X,thres);   
+% MAP = singleCRN_Optim(pars,D,X,thres); % run this in case of 10Be and no composition
+
 
 % OPTIONAL
 % estimate uncertainty, this take quite some time to calculate, therefore I
 % commented the next line to speed up the example
-[MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,X_MAP,MAP,thres);
-
+[MAP_uncerts, X_uncerts] = singleCRN_uncerts(pars,D,X,MAP,thres,X_MAP);
+% MAP_uncerts = singleCRN_uncerts(pars,D,X,MAP,thres); % run this in case of 10Be and no composition
 %% OUTPUT RESULTS ------------------------------------------------------- %
 
 % outputs the values for the higher rate if there was a nonunique solution

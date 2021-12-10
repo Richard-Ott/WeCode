@@ -28,6 +28,8 @@ switch length(sheets)
             X.mode = 'soil';
         elseif size(Xdata,2)== 11
             X.mode = 'bedrock';
+        elseif X.n == 1 && size(Xdata,2) == 5
+            X.mode = 'noComp';
         else
             error('Please check your input table. You did not provide the data as specified in the example input')
         end
@@ -41,7 +43,11 @@ switch length(sheets)
                 X.W              = Xdata(ind,10);                                    % Weathering rate
                 X.Wstd           = Xdata(ind,11);
                 X.soil_mass      = Xdata(ind,7);
-            end
+            case 'noComp'
+                X.W              = Xdata(ind,4);                                    % Weathering rate
+                X.Wstd           = Xdata(ind,5);
+                X.soil_mass      = Xdata(ind,1);                
+         end
         
         num = num(ind,:); 
         sampName = txt{ind+2,1}; 
