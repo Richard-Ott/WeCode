@@ -57,11 +57,17 @@ switch length(sheets)
         [num36,~,~]     = xlsread(filename,'36Cl Cronus');               % load 36Cl data
         [Xdata,Xtxt,~]  = xlsread(filename,find(~nuclide_sheet));        % load compositional data
         
+        if size(Xdata,2)== 4
+            X.mode = 'soil';
+        elseif size(Xdata,2)== 7
+            X.mode = 'bedrock';
+        end
+        
         num10 = num10(ind,:);   
         num36 = num36(ind,:);
         sampName = txt10{ind+2,:}; 
         num.num10 = num10; num.num36 = num36;
-        X.soil_mass    = Xdata(ind,7);
+        X.soil_mass    = Xdata(ind,end);
 end
 
 DEMdata.method = Xtxt{ind+1,10};

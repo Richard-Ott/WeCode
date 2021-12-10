@@ -56,7 +56,7 @@ x0(2) = cl36erateraw(pp,spini,sf36,cp36,scaling_model,0);  % start parameters se
 
 
 %% OPTIMIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-options = optimset('MaxIter',5e4,'TolFun',tolerance,'TolX',0.05);            
+options = optimset('MaxIter',5e4,'TolFun',tolerance);            
 % These options may need to be tuned specifically to your problem
 % TolFun, maximum value that the function is allowed to be off, at/g
 % TolX, the tolerance value in x-direction (erosion rates in g/cm2/a), which the

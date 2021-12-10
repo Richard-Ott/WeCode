@@ -82,7 +82,6 @@ if exist('nonunique')
     if MAP > D_Nmax; bounds = [D(1), D_Nmax]; else; bounds = [D_Nmax,D(2)];end
     fun = @(x) abs(Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X) - Nobs);
     MAP = [MAP, fminsearchbnd(fun,x0,bounds(1),bounds(2),options)];
-    [~,X_MAP(2)] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2),X);
 end    
 
 MAP = MAP/sp.rb*10;  % convert back to mm/ka
@@ -90,7 +89,10 @@ MAP = MAP/sp.rb*10;  % convert back to mm/ka
 varargout{1} = MAP;
 if nargout == 2
     % run forward model one more time for compositional output
-    [~,X_MAP] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP,X);
+    X_MAP = cell(1,2);
+    [~,X_MAP{1}] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(1),X);
+    [~,X_MAP{2}] = Comp_and_N_forwardX(pp,sp,sf,cp,maxage,soil_mass,MAP(2),X);
+
     varargout{2} = X_MAP;
 end
 end
