@@ -40,7 +40,7 @@ switch X.mode
     case 'soil'
         fQz = [0,X.fQzS];                 % fraction of quartz in bedrock (cannot be smaller than fraction in soil)
     case 'bedrock'
-        fQz = [X.fQzB,1-X.fXB];           % fraction of quartz in soil (cannot be smaller than fraction in bedrock)
+        fQz = [X.fQzB,1/(X.fQzB+X.fXB)*X.fQzB]; % fraction of quartz in soil (cannot be smaller than fraction in bedrock, and can only be enriched to a factor of 1/enrichment
 end
 
 % Resolution, under which parameters resolution does stop the model
