@@ -1,9 +1,6 @@
 % This in an example script on how to calculate the denudation rate for a 
 % paired nuclide measurement of a soluble and an insoluble target mineral. 
 %
-% The parameter search is performed via a Markov-Chain Monte Carlo approach
-% with a Metropolis Hastings sampling alrogithm. 
-%
 % Richard Ott, 2021
 
 % the current version is written for 10Be and 36Cl, could easily be
@@ -23,10 +20,9 @@ addpath '.\subroutines'
 % THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();      % interactively choose the DEM that encompasses the basin
-    DEMdata.export = 1;           % do you want to save the individual sample scaling factors as .mat file?
-    % This can be useful when the computation for scaling schemes like 'sa'
-    % and 'sf'  takes a long time for a big basin and you want the scaling
-    % factors saved for later
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % basin and you want the scaling. You may want to save the scaling data
+    % for later re-runs.
     
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num.num10(:,2),num.num10(:,1),'ll');  % delineate drainage basins and check their geometry
 end
@@ -67,9 +63,3 @@ switch X.mode
         disp(['Fraction of calcite in soil fCaS = '    num2str(round(XMAP.fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
 end
 
-% export = input('Do you want to export your results? "y" or "n"? ','s');
-% if strcmpi(export,'y')
-%     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-%     out_table = table(txt10,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP(2),'VariableNames',vars);
-%     writetable(out_table,[ '.\output\JO\pairedN\' txt10{1} '_' X.mode '.xlsx'])
-% end

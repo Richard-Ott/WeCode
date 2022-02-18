@@ -1,6 +1,5 @@
 % This script calculates the bias in measurements for minerals
 % that are either more or less soluble than their host rock.
-% Loosely based on Riebe and Granger eqn. 14.
 % The script calculates for different weathering fractions and soil
 % thicknesses how the bias would affect this specific sample.
 %
@@ -13,7 +12,6 @@
 
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded
-% It's also written to only function for a single sample
 
 clc
 clear 
@@ -23,7 +21,7 @@ addpath '.\subroutines'
 % User choice ----------------------------------------------------------- %
 nuclide = '36Cl';      % nuclide of interest e.g. '10Be', '36Cl'
 scaling_model = 'st';  % scaling model, for nomenclature see CronusCalc
-[num,txt,~] = xlsread('Test_Input_Single2.xlsx',1);
+[num,txt,~] = xlsread('Test_Input_Single_Cl.xlsx',1);
 DEMdata.method = 'location';     % Do you want to compute the erosion rate for a specific 'location', or a 'basin'
 
 %% assign data and initial basin calculations --------------------------- %
@@ -32,10 +30,9 @@ DEMdata.method = 'location';     % Do you want to compute the erosion rate for a
 % pixel-by-pixel calculated production rate provide a DEM
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
-    % This can be useful when the computation for scaling schemes like 'sa'
-    % and 'sf'  takes a long time for a big basin and you want the scaling
-    % factors saved for later
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % basin and you want the scaling. You may want to save the scaling data
+    % for later re-runs.
     
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
@@ -51,8 +48,7 @@ Cronus_prep = {@Cronus_prep10, @Cronus_prep36};
 pars = Cronus_prep{n}(num,DEMdata);
 v2struct(pars)
 
-% rename some variables. This may look ugly for this script but is used to
-% keep the naming in the subsoutines consistent
+% rename some variables. 
 if exist('sp10')
     nominal = nominal10; uncerts = uncerts10; sp = sp10; sf = sf10; cp = cp10;
     clear nominal10 uncerts10 sp10 sf10 cp10
@@ -65,7 +61,7 @@ erate_funcs = {@be10erateraw, @cl36erateraw};
 erate_raw=erate_funcs{n}(pp,sp,sf,cp,scaling_model,0);
 
 %% Compute for different soil masses and enrichment factors ------------- %
-Xs_Xr = 0:0.01:5;             % ratio of enrichment of depletion of target mineral in the soil vs bedrock Xsoil/Xrock
+Xs_Xr = 0:0.01:5;             % ratio of enrichment/depletion of target mineral in the soil vs bedrock Xsoil/Xrock
 ph = 20:1:200;                % soil mass in g/cm²
 
 CEF = nan(length(ph),length(Xs_Xr));         % chemical erosion factor 
@@ -140,8 +136,8 @@ imagesc(Xs_Xr,ph,p_err,[-170,170]); hold on
 colormap(cmap)
 contour(X,Y,p_err,'k','ShowText','on','LevelList',[-50:10:200],'LabelSpacing',500)
 set(gca,'YDir','normal');
-xlabel('X_{soil}/X_{rock}');
-ylabel('Soil mass (g/cm^2)');
+xlabel('X_{regolith}/X_{rock}');
+ylabel('regolith mass (g/cm^2)');
 h = colorbar;
 ylabel(h, 'Percentage error')
 ylim([min(ph),max(ph)])

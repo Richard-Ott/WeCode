@@ -24,7 +24,9 @@ pp=physpars();                               % get physical parameters
 % First, determine the effective neutron attenuation length following
 % Marrero, 2016.
 if isnan(num(13)) && strcmpi(DEMdata.method,'basin')
-    Leff = neutron_att_length_DEM(DEMdata.DEM,DEMdata.utmzone);
+    DEMc = DEMdata.DEM; DEMc.Z(DEMdata.DB.Z ~=1) = nan;
+    DEMc = crop(DEMc);
+    Leff = neutron_att_length_DEM(DEMc,DEMdata.utmzone);
     num(13) = Leff;
 elseif isnan(num(13)) && strcmpi(DEMdata.method,'location')
     Leff = neutron_att_length(num(1),num(2),num(3));

@@ -1,4 +1,4 @@
-% This script plots figs. X, X, and X from the Ott et al., XXXX
+% This script plots figs. 3, 5, and 7 from the Ott et al., 2022
 % All values computed assuming exponential production profiles with
 % production rates at SLHL and Stone scaling.
 % For 36Cl a pure carbonate composition is assumed and therefore only Ca

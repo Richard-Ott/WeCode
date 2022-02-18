@@ -1,8 +1,8 @@
 % The script calculates the "danger zone" for a soluble target mineral. The
-% "danger zone" is defined as either (1) the denudation rates for which 
+% "danger zone" is defined as either (1) the denudation rate below which 
 % increased denudation does not lead to a decrease in nuclide concentration
-% in the target mineral anymore (D_Nmax), or (2) the denudation rates that
-% have a unique parameter combination (D_unique).
+% in the target mineral (D_Nmax), or (2) the denudation rate below which
+% there is no unique denudation rate solution (D_unique).
 % Richard Ott, 2021
 %
 % the current version is written for 10Be and 36Cl, could easily be
@@ -39,9 +39,9 @@ for i = 1:length(soil_masses)
             D_unique(j,i) = solCRN_D_unique(pars,D,X);
         catch % only possible if bedrock chemistry provided
             if X.n == 1
-                D_unique(j,i) = W(j)/10*sp10.rb/X.fCaB;
+                D_unique(j,i) = W(j)/10*pars.sp10.rb/X.fCaB;
             elseif X.n == 2
-                D_unique(j,i) = W(j)/10*sp36.rb/X.fCaB;
+                D_unique(j,i) = W(j)/10*pars.sp36.rb/X.fCaB;
             end
         end
     end
@@ -65,7 +65,6 @@ cmap = struct2cell(cmap);
 cmap = cmap{1};
 imagesc(soil_masses,W,D_Nmax); hold on
 colormap(cmap)
-% contour(XX,YY,D_Nmax,'k','LevelList',[-10:5:100])
 contour(soil_masses,W,D_Nmax,'k','ShowText','on','LevelList',[0:10:200],'LabelSpacing',500)
 set(gca,'YDir','normal');
 xlabel('soil mass g/cm²');
@@ -76,7 +75,6 @@ ylabel(h, 'Denudation rate mm/ka')
 subplot(1,2,2)
 imagesc(soil_masses,W,D_unique); hold on
 colormap(cmap)
-% contour(XX,YY,D_Nmax,'k','LevelList',[-10:5:100])
 contour(soil_masses,W,D_unique,'k','ShowText','on','LevelList',[0:10:200],'LabelSpacing',500)
 set(gca,'YDir','normal');
 xlabel('soil mass g/cm²');

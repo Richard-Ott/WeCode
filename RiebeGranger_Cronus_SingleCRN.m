@@ -1,5 +1,6 @@
 % The script shows how to calculate the denudation rate from a single nuclide
-% measurement of a soluble or an insoluble target mineral. 
+% measurement of a soluble or an insoluble target mineral. Use the provided
+% single CRN input sheets.
 %
 % The parameter search is performed via a Markov-Chain Monte Carlo approach
 % with a Metropolis Hastings sampling alrogithm. 
@@ -15,7 +16,7 @@ close all
 addpath '.\subroutines'
 
 % load data
-[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
+[num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Cl.xlsx');
 
 %% assign data and initial basin calculations --------------------------- %
 
@@ -24,10 +25,9 @@ addpath '.\subroutines'
 % THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
-    % This can be useful when the computation for scaling schemes like 'sa'
-    % and 'sf'  takes a long time for a big basin and you want the scaling
-    % factors saved for later
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % basin and you want the scaling. You may want to save the scaling data
+    % for later re-runs.
     
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
@@ -78,10 +78,4 @@ try
             disp(['Fraction of calcite in soil fCaS = '    num2str(round(X_MAP(end).fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
     end
 end
-% 
-% export = input('Do you want to export your results? "y" or "n"? ','s');
-% if strcmpi(export,'y')
-%     vars = {'Name','fQzS','fCaS','fXS','fQzB','fCaB','fXB','W','D'};
-%     out_table = table(txt,X.fQzS,X.fCaS,X.fXS,X.fQzB,X.fCaB,X.fXB,W,MAP/rho*10 ,'VariableNames',vars);
-%     writetable(out_table,[ '.\output\JO\36Cl\' txt{1} '_' X.mode '.xlsx'])
-% end
+
