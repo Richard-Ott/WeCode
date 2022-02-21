@@ -46,8 +46,10 @@ forward_model = {@N10_forward,@N36_forward};% to avoid opening more switch state
 %% Minimum denudation rate %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyond 100% of the soil fraction
-if strcmpi(X.mode,'bedrock'); insol = X.fQzB + X.fXB; end
-if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
+if strcmpi(X.mode,'bedrock') 
+    insol = X.fQzB + X.fXB; 
+    if insol > (D(1)-W)/D(1); D(1) = W/(1-insol); end
+end
 
 % compute nuclide concentration for Dmin. If observed concentration is
 % lower than for Dmin, then the calculation will have a unique solution
