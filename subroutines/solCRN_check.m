@@ -87,8 +87,8 @@ fun = @(x) (-1)*Comp_and_N_forward(pp,sp,sf,cp,maxage,soil_mass,x,X); % mulitply
 [D_Nmax,Nmax] = fminsearchbnd(fun,x0,D(1),D(2),options);
 
 if Nobs > Nmax*(-1)
-    error('Your input concentration is higher as can be explained by the model parameters. Please, check input')
-else
+    error('Your input concentration is higher than N_max.\nThis means that with the current model parameters and assumptions your nuclide concentration cannot be explained. Either change input values or change model (e.g. soil-bedrock interface weathering).')
+elseif Nobs > N_Dmin
     sprintf(['The maximum modelled nuclide concentration is found for a denudation rate of ' num2str(D_Nmax/sp.rb*10) ' mm/ka \nIf you are confident that the denudation of your sample is higher, then there is a unique solution.'])
     pars.D_Nmax = D_Nmax;
     pars.Nmax = Nmax*(-1);

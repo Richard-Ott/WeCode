@@ -49,7 +49,7 @@ Nobs = nominal(data_ind);              % measured concentration
 % The enrichment cannot produce denudation rates that would lead to
 % enrichment of insoluble minerals that go beyonf 100% of the soil fraction
 switch X.mode; case 'bedrock'; insol = X.fQzB + X.fXB; case 'noComp'; insol= -1; end
-if and(insol > (D(1)-W)/D(1), strcmp(X.mode,'bedrock')); D(1) = W/(1-insol); end
+if exist('insol','var'); D(1) = W/(1-insol); end
 
 
 D = D/10*sp.rb;                        % convert to g/cm²/ka for Cronus
