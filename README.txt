@@ -46,5 +46,13 @@ enrichment/depletion of minerals for different soil depths.
 IF YOU WANT TO USE A CDF (chemical depletion fraction) INPUT, SWITCH TO THE CDF BRANCH OF THE
 REPOSITORY!
 
-Color maps are from Crameri, F. (2018), Scientific colour-maps, Zenodo, doi:10.5281/zenodo.1243862
-Code is integrated into CRONUS Earth v2.1 by Marrero et al. 2016 https://doi.org/10.1016/j.quageo.2015.09.005
+Cite as:
+Ott, Richard (2022): WeCode - Weathering Corrections for denudation rates. V. 1.0. GFZ Data Services.
+https://doi.org/10.5880/GFZ.4.6.2022.001
+
+Related references:
+Crameri, F. (2018), Scientific colour-maps, Zenodo, doi:10.5281/zenodo.1243862
+
+Marrero, S. M., Phillips, F. M., Borchers, B., Lifton, N., Aumer, R., & Balco, G. (2016). 
+Cosmogenic nuclide systematics and the CRONUScalc program. Quaternary Geochronology, 31, 160–187. 
+https://doi.org/10.1016/j.quageo.2015.09.005
