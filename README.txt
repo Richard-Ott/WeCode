@@ -45,8 +45,6 @@ enrichment/depletion of minerals for different soil depths.
 
 IF YOU WANT TO USE A CDF (chemical depletion fraction) INPUT, SWITCH TO THE CDF BRANCH OF THE
 REPOSITORY!
+
 Color maps are from Crameri, F. (2018), Scientific colour-maps, Zenodo, doi:10.5281/zenodo.1243862
 Code is integrated into CRONUS Earth v2.1 by Marrero et al. 2016 https://doi.org/10.1016/j.quageo.2015.09.005
-
-Copyright © 2022 Helmholtz Centre Potsdam - GFZ German Research Centre for Geosciences Potsdam, 
-Germany (https://www.gfz-potsdam.de/). This work is licensed under CC BY-NC 4.0.
