@@ -20,12 +20,10 @@ addpath '.\subroutines'
 % pixel-by-pixel calculated production rate provide a DEM
 % THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
-    DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    DEMdata.export = 1;             % do you want to save the individual sample scaling factors as .mat file?
-    % This can be useful when the computation for scaling schemes like 'sa'
-    % and 'sf'  takes a long time for a big basin and you want the scaling
-    % factors saved for later
-    
+    DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin   
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % basin and you want the scaling. You may want to save the scaling data
+    % for later re-runs.
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
@@ -45,8 +43,8 @@ thres = 0.1;                           % threshold of nuclide concentration erro
 MAP = singleCRN_Optim(pars,D,X,thres);   
 
 % OPTIONAL
-% estimate uncertainty, this take quite some time to calculate, therefore I
-% commented the next line to speed up the example
+% estimate uncertainty, this can take quite some time to calculate (feel
+% free to comment this line)
 MAP_uncerts = singleCRN_uncerts(pars,D,X,MAP,thres);
 
 %% OUTPUT RESULTS ------------------------------------------------------- %
