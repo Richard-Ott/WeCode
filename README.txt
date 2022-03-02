@@ -21,7 +21,7 @@ Single nuclide measurement with an independent weathering rate:
 Test_Input_Single_Be.xlsx -> 10Be, Test_Input_Single_Cl.xlsx -> 36Cl
 Test_input_Paired.xlsx is for running the paired nuclide optimization
 
-- RiebeGranger_Cronus_PairedCRN:
+- PairedCRN_denudation:
 Assuming you have a paired 10Be and 36Cl measurement and know your bedrock OR regolith chemistry 
 (fraction of quartz, fraction of calcite, fraction of other insoluble minerals), you 
 can calculate the "real denudation rate". The code uses an optimization algorithm to solve 
@@ -29,7 +29,7 @@ for the correct denudation rate and enrichment/depletion of minerals in the soil
 The code also estimates the weathering rate based on the given parameters. Use the 
 Test_input_Paired.xlsx excel sheet to adjust input parameters.
 
-- RiebeGranger_Cronus_SingleCRN: This code calculates the "real" denudation rate from a
+- SingleCRN_denudation: This code calculates the "real" denudation rate from a
 single nuclide measurement (soluble or insoluble target mineral), given that either the 
 bedrock or soil chemistry is provided (for 36Cl only), and the overall weathering rate is known.
 It uses a built-in optimization algorithm to find the denudation rate.
@@ -38,7 +38,7 @@ It uses a built-in optimization algorithm to find the denudation rate.
 concentrates along the regolith-bedrock interface. To solve the equations it uses a the fminsearch
 Matlab optimization algorithm. Run this script with one of the single nuclide test files.
 
-- RiebeGranger_Cronus_CarbBias: This script plots the bias in denudation rate measurements due to
+- CarbBias: This script plots the bias in denudation rate measurements due to
 enrichment/depletion of minerals for different soil depths. 
 
 - SLHL_bias_plots: Run this script to recreate figures 3,5, and 7 in Ott et. al 2022.
