@@ -29,6 +29,7 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot36 = N_SBI36 + P_avg36 * (soil_mass/((D-W)/1000));  
+Ntot36 = (N_SBI36 - P_avg36/pp.lambda36Cl)*exp(-pp.lambda36Cl * (soil_mass/((D-W)/1000)))+ P_avg36/pp.lambda36Cl;  
+% Ntot36 = N_SBI36 + P_avg36 * (soil_mass/((D-W)/1000));  % no decay
 end
 

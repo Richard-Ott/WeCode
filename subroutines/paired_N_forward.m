@@ -50,8 +50,12 @@ P_avg36 = mean(Pz36);   % 36Cl average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * Xcur.fQzS/Xcur.fQzB;  
-Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * Xcur.fCaS/Xcur.fCaB;  
+Ntot10 = (N_SBI10 - P_avg10/pp.lambda10Be)*exp(-pp.lambda10Be * (soil_mass/(D/1000)) * Xcur.fQzS/Xcur.fQzB)+ P_avg10/pp.lambda10Be;  
+Ntot36 = (N_SBI36 - P_avg36/pp.lambda36Cl)*exp(-pp.lambda36Cl * (soil_mass/(D/1000)) * Xcur.fCaS/Xcur.fCaB)+ P_avg36/pp.lambda36Cl;  
+
+% below equations without decay
+% Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * Xcur.fQzS/Xcur.fQzB;
+% Ntot36 = N_SBI36 + P_avg36 * (soil_mass/(D/1000)) * Xcur.fCaS/Xcur.fCaB;  
 
 Es = Xcur.fQzB/Xcur.fQzS * D;  % soil erosion
 Ws = D-Es;                     % soil weathering

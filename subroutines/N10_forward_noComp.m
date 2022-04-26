@@ -28,6 +28,8 @@ P_avg10 = mean(Pz10);   % 10Be average soil production rate
 % Part 2: calculate final average soil nuclide concentrations
 
 % final average soil mineral soil concentration
-Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (D/(D-W));  
+% Ntot10 = N_SBI10 + P_avg10 * (soil_mass/(D/1000)) * (D/(D-W)); % no decay
+Ntot10 = (N_SBI10 - P_avg10/pp.lambda10Be)*exp(-pp.lambda10Be * (soil_mass/(D/1000)) * (D/(D-W)))+ P_avg10/pp.lambda10Be;  
+
 end
 
