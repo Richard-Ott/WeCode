@@ -1,3 +1,5 @@
+% This function was published within Cronus v2.1 by Marrero et al. 2016
+% and addpted for WeCode by Richard Ott, 2021
 %
 % function [Prodtotal,Prods,ProdsCa,ProdsK,ProdsTi,ProdsFe,Prodth,Prodeth,...
 %    Prodmu,ProdmuCa,ProdmuK,Phith,Phieth,Kpercent,Capercent,Clpercent]=prodz36(z,pp,sf,cp);
@@ -7,9 +9,9 @@
 %    pp,sf,cp     Parameters for this sample, as returned by
 %                 getpars36().
 %
-% The prodz function calculates the individual 
-% contribution to the production from spallation, epithermal, 
-% thermal, and muon pathways at a particular given depth. 
+% The prodz function calculates the individual
+% contribution to the production from spallation, epithermal,
+% thermal, and muon pathways at a particular given depth.
 %
 %This code includes a snow shielding factor according to Zweck et al.
 %(2013). This is set to 0 depth of cover normally, yielding a factor of 1.
@@ -91,13 +93,13 @@ Rmu=Pmu/(sf.currentsf.SFth*pp.Pf0*cp.Reth);
 Rmup=Rmu*pp.pEtha/cp.pEthss;
 %
 %
-% Snow shielding correction according to Zweck et al. (2013). 
+% Snow shielding correction according to Zweck et al. (2013).
 zsnow=0; %depth of snow cover [cm]
 rhosnow=1; %density of snow [g/cm3]
 zcover=zsnow*rhosnow; %snow mass length [g/cm2]
-covertime=0.0; %fraction of time when cover is present. This is applied to 
-%each time step. Example: if a time step is 100 years, this would assume 
-%that the cover was present for half of that time. 
+covertime=0.0; %fraction of time when cover is present. This is applied to
+%each time step. Example: if a time step is 100 years, this would assume
+%that the cover was present for half of that time.
 
 %Zweck et al. (2013) constants for different composition rocks - leave only one option (a and
 %b)uncommented. Uncertainties (sigma) - not used at this time. Assumes
@@ -121,7 +123,7 @@ b=[3.701 -0.0238 -2.525 -0.697 1.0185];
 %sigmaa=[0.18 0.014 0.15 350];
 %sigmab=[0.056 0.0011 0.069 0.041 0.0005];
 
-snows=covertime*exp(-zcover/cp.Lambdafe)+(1-covertime); %Produces only 1 value - does 
+snows=covertime*exp(-zcover/cp.Lambdafe)+(1-covertime); %Produces only 1 value - does
 % not depend on depth or composition
 
 snoweth=covertime*((a(1)*zcover+1)^(a(2))-(((cp.ls*cp.rb)*zcover^(a(3)))/a(4)))+(1-covertime);
@@ -157,7 +159,7 @@ Prods=ProdsCa+ProdsK+ProdsTi+ProdsFe;
 %Old eqn: updated 1 Mar 2015 because the incoming flux is not the
 %epithermal flux/thermal flux. Those are derived from the high-energy flux
 %and so the scaling has to be the high-energy scaling. In this case, we use
-%the general flux scaling factor over all energies. 
+%the general flux scaling factor over all energies.
 %
 Phith=sf.currentsf.SFth*sf.ST*snowth*(cp.Phistarthss*expfactor+...
      (1+Rmup).*cp.SFDeltaPhistarethss.*exp(-z/cp.Lethss)+...
@@ -178,7 +180,7 @@ Prodth=cp.fth/cp.Lambdathss*Phith;
 %Old eqn: updated 1 Mar 2015 because the incoming flux is not the
 %epithermal flux/thermal flux. Those are derived from the high-energy flux
 %and so the scaling has to be the high-energy scaling. In this case, we use
-%the general flux scaling factor over all energies. 
+%the general flux scaling factor over all energies.
 
 Phieth=sf.currentsf.SFeth*sf.ST*snoweth*(cp.Phistarethss.*expfactor+...
     (1+Rmu.*cp.Reth).*cp.FDeltaPhistareth.*exp(-z/cp.Lethss)+...
@@ -188,11 +190,11 @@ Phieth=sf.currentsf.SFeth*sf.ST*snoweth*(cp.Phistarethss.*expfactor+...
 %    Rmudepth.*cp.Phistarethss);
 %
 % Get epithermal production using the flux
-% 
+%
 Prodeth=(1-cp.pEthss)*cp.feth/cp.Lambdaethss*Phieth;
 %
 % Muons are now being multiplied by the terrain shielding factor. They are
-% already scaled to the site location. 
+% already scaled to the site location.
 
 ProdmuCa=sf.ST*interpolate(cp.muon36(1,:),cp.muon36(2,:),z);
 ProdmuK=sf.ST*interpolate(cp.muon36(1,:),cp.muon36(3,:),z);
@@ -215,13 +217,9 @@ Clpercent=(Prodth+Prodeth).*OneHundredOverProdtotal;
 %produced anywhere in the computation.
 
 if (sum(isnan(Prodtotal)) > 0)
-  Prods
-  Prodth
-  Prodeth
-  Prodmu
   warning('Prodz36 produced NaN! Probably your erosion rate is high. production at greta depth will be set to zero. (RO edit)');
-  Prodth = zeros(size(Prodth));
-  Prodeth = zeros(size(Prodeth));
-  Prodmu = zeros(size(Prodmu));
+  Prodth(isnan(Prodth))   = 0;
+  Prodeth(isnan(Prodeth)) = 0;
+  Prodmu(isnan(Prodmu))   = 0;
   Prodtotal=Prods+Prodth+Prodeth+Prodmu;
 end

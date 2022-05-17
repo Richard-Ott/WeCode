@@ -1,3 +1,6 @@
+% This function was published within Cronus v2.1 by Marrero et al. 2016
+% and addpted for WeCode by Richard Ott, 2021
+%
 %
 % pp=physpars()
 %
@@ -18,7 +21,7 @@ pp.lambda3He=0.0;
 pp.lambda21Ne=0.0;
 pp.lambda26Al=9.83e-7;
 
-%parameters for chlorine IDMS 
+%parameters for chlorine IDMS
 pp.Wn=3.54527e+1;
 pp.Wo=3.4963e+1;
 pp.Sn=3.12e+0;
@@ -27,21 +30,21 @@ pp.An=pp.Sn/(pp.Sn+1);
 pp.Ao=pp.So/(pp.So+1);
 
 %
-% The table below corresponds to the table on the TABLE page in CHLOE.  The data is from Fabryka-Martin 1988, and was updated by Vasily Alfimov using the   
-% "Atlas of Neutron Resonances" by S.F. Mughabghab, Elsevier Science, 2006.The rows correspond to the following elements (top to bottom): 
+% The table below corresponds to the table on the TABLE page in CHLOE.  The data is from Fabryka-Martin 1988, and was updated by Vasily Alfimov using the
+% "Atlas of Neutron Resonances" by S.F. Mughabghab, Elsevier Science, 2006.The rows correspond to the following elements (top to bottom):
 %  O, H, C, Na, Mg, Al, Si, P, K, Ca, Ti, Mn, Fe, Cl, B, Sm, Gd, U, Th, Cr, & Li.  Li & Cr are from the original Fabryka-Martin table and were not
-%  updated. 
-% The columns correspond to the following categories: col 1= Ai=Atomic weight of element (g/mol), 
-%  col2 = average log decrement of energy per neutron collison with element i [-], col 3= neutron scattering cross-section of element i[i], 
-%  col 4= thermal neutron absorption cross-section of element i [-], col 5= dilute resonance integral for element i [-], 
-%  col 6= Mass stopping power of element i for alpha particles of a given energy [-], 
-%  col 7= neutron yield of element i per ppm U in radioequilibrium [-], col 8= Neutron yield of element i per ppm Th in radioequilibrium, 
+%  updated.
+% The columns correspond to the following categories: col 1= Ai=Atomic weight of element (g/mol),
+%  col2 = average log decrement of energy per neutron collison with element i [-], col 3= neutron scattering cross-section of element i[i],
+%  col 4= thermal neutron absorption cross-section of element i [-], col 5= dilute resonance integral for element i [-],
+%  col 6= Mass stopping power of element i for alpha particles of a given energy [-],
+%  col 7= neutron yield of element i per ppm U in radioequilibrium [-], col 8= Neutron yield of element i per ppm Th in radioequilibrium,
 %  col 9 = Km, 602/atomic weight of sample, used to convert to at/g from
 %  ppm. col 10= Stoichiometry ratio of oxide (oxygen to element i) [-], col 11=atomic number [-],
 % col 12=Average capture probability relative to oxygen P(Z) (ref: von
 % Egidy & Hartman 1982, value for C from back calculation from Heisinger
 % 2002 compound factor calculations).
-%  
+%
 pp.table=[...
 16          0.120004104		3.761		0.00019	0.0002693   539     0.23	0.079	0		0   8   1.00;...% O
 1.01		1               20.49		0.3326	0           1542	0       0		0		0.5 1   0.00;...% H
@@ -73,7 +76,7 @@ pp.Aa=14.5;
 %
 % Published values were used for these parameters.
 %
-pp.PsTi0=3.98002E-22; 
+pp.PsTi0=3.98002E-22;
 %pp.PsTi0=3.98002E-22*3.5; Value from Fink (2000)
 pp.PsFe0=1.72421e-22; %value from Stone (2005) abstract
 pp.YstarCa=2.0e-24;
@@ -85,13 +88,13 @@ pp.Natoms10 = 2.006e22;
 pp.Natoms14 = 2.006e22;
 pp.Natoms26 = 1.003e22;
 
-%k_negpartial must be multiplied 
+%k_negpartial must be multiplied
 %by fstar(below)
 pp.k_negpartial14 = 0.704 * 0.1828;
 pp.delk_negpartial14 = 0.704 * 0.1828 * 0.0011;
 pp.k_negpartial36K=0.802;
 pp.k_negpartial36Ca=0.8486;
-pp.k_negpartial10=(0.704 * 0.1828)./1.106; 
+pp.k_negpartial10=(0.704 * 0.1828)./1.106;
 pp.sigmak_neg10 = (0.704 * 0.1828 * 0.0003)./1.106;
 pp.k_negpartial26=0.296 * 0.6559;
 pp.sigmak_neg26 = 0.296 * 0.6559 * 0.002;
@@ -122,32 +125,32 @@ pp.SPhiInf = 416.492; % Changed 12/13/11 to reflect updated SPhi values from Uso
 %
 %Production rates for all nuclides/all scaling schemes. Muon parameters calibrated for Al, Be, and
 %Cl.
-% References: 
+% References:
 % CRONUScalc 2.0 refers to the original version of this code as
 % published in 2016. The individual paper reference is given afterwards by
-% abbreviation as indicated below. Any deviations from this are noted. 
-% CRONUScalc 2.1 refers to production rates changed/recalibrated after updates in 2020. 
+% abbreviation as indicated below. Any deviations from this are noted.
+% CRONUScalc 2.1 refers to production rates changed/recalibrated after updates in 2020.
 
-% Borchers: Borchers, B., Marrero, S., Balco, G., Caffee, M., 
-% Goehring, B., Lifton, N., Nishiizumi, K., Phillips, F., Schaefer, J., 
+% Borchers: Borchers, B., Marrero, S., Balco, G., Caffee, M.,
+% Goehring, B., Lifton, N., Nishiizumi, K., Phillips, F., Schaefer, J.,
 % and Stone, J., 2016, Geological calibration of spallation production rates
-% in the CRONUS-Earth project: Quaternary Geochronology, v. 31, p. 188–198, 
+% in the CRONUS-Earth project: Quaternary Geochronology, v. 31, p. 188–198,
 % doi:10.1016/j.quageo.2015.01.009.
 
-% Marrero: S. Marrero, F.M. Phillips, M. Caffee, J. Gosse. (2016b). 
-% CRONUS-Earth cosmogenic chlorine-36 calibration. Quaternary Geochronology, 
-% 31, 199-219, doi:10.1016/j.quageo.2015.10.002. 
+% Marrero: S. Marrero, F.M. Phillips, M. Caffee, J. Gosse. (2016b).
+% CRONUS-Earth cosmogenic chlorine-36 calibration. Quaternary Geochronology,
+% 31, 199-219, doi:10.1016/j.quageo.2015.10.002.
 
-% Phillips: F. M. Phillips, D. C. Argento, G. Balco, M. W. Caffee, J. Clem, 
-% T. J. Dunai, R. Finkel, B. Goehring, J. C. Gosse, A. M. Hudson, A. J. T. Jull, 
-% M. A. Kelly, M. Kurz, D. Lal, N. Lifton, S. M. Marrero, K. Nishiizumi, 
-% R. C. Reedy, J. Schaefer, J. O. H. Stone, T. Swanson, M. G. Zreda. (2016a). 
-% The CRONUS-Earth Project: A Synthesis. Quaternary Geochronology, 31, 119-154, 
+% Phillips: F. M. Phillips, D. C. Argento, G. Balco, M. W. Caffee, J. Clem,
+% T. J. Dunai, R. Finkel, B. Goehring, J. C. Gosse, A. M. Hudson, A. J. T. Jull,
+% M. A. Kelly, M. Kurz, D. Lal, N. Lifton, S. M. Marrero, K. Nishiizumi,
+% R. C. Reedy, J. Schaefer, J. O. H. Stone, T. Swanson, M. G. Zreda. (2016a).
+% The CRONUS-Earth Project: A Synthesis. Quaternary Geochronology, 31, 119-154,
 % doi:10.1016/j.quageo.2015.09.006.
 
 % Moore: A. K. Moore and D. E. Granger. (2019). Calibration of the
 % production rate of cosmogenic 36Cl from Fe. Quaternary Geochronology, 51,
-% 87-98, doi: 10.1016/j.quageo.2019.02.002. 
+% 87-98, doi: 10.1016/j.quageo.2019.02.002.
 
 switch scaling_model
 case 'de'
@@ -182,13 +185,13 @@ case 'de'
 	pp.sigma036Ca=8.260059e-30;%CRONUScalc 2.1; CRONUScalc 2.0 - Marrero (Prev Value: 8.279102e-30)
 	pp.sigma010=0.251e-30; %CRONUScalc 2.0 - Phillips
 	pp.sigma026=4.21e-30; %CRONUScalc 2.0 - Phillips
-    
-%pp.StAl = 27; % for Lal/Stone age approximation in Attn Length Calc 
-%pp.StBe = 4; % for Lal/Stone age approximation in Attn Length Calc 
-%pp.StClCa = 54; % for Lal/Stone age approximation in Attn Length Calc 
-%pp.StC = 12.4; % for Lal/Stone age approximation in Attn Length Calc 
-%pp.StC = 12.4; % for Lal/Stone age approximation in Attn Length Calc 
-%pp.StHe = 120; % for Lal/Stone age approximation in Attn Length Calc 
+
+%pp.StAl = 27; % for Lal/Stone age approximation in Attn Length Calc
+%pp.StBe = 4; % for Lal/Stone age approximation in Attn Length Calc
+%pp.StClCa = 54; % for Lal/Stone age approximation in Attn Length Calc
+%pp.StC = 12.4; % for Lal/Stone age approximation in Attn Length Calc
+%pp.StC = 12.4; % for Lal/Stone age approximation in Attn Length Calc
+%pp.StHe = 120; % for Lal/Stone age approximation in Attn Length Calc
 
 case 'du'
 % DU scaling

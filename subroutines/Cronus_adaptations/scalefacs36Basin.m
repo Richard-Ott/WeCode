@@ -1,3 +1,6 @@
+% This function was published within Cronus v2.1 by Marrero et al. 2016
+% and addpted for WeCode by Richard Ott, 2021
+%
 %
 % sf=scalefacs36(sp36,scaling_model,DEM,DB)
 % scaling facotrs for a basin
@@ -27,7 +30,7 @@ sf.elevation=sp36.elevation;
 %
 
 load pmag_consts
- 
+
 IX = find(DB.Z == 1);        % get basin indices
 nIX = length(IX);
 % get Lat, Lon coordinates of DEM -----------------------------
@@ -60,11 +63,11 @@ for i = 1:nIX
     tdsfsample.pressure = 1013.25*exp(((-0.03417)/6.5e-3)*(log(288.15)-log(288.15-(6.5e-3*DEM.Z(IX(i))))));
     tdsfsample.elevation= DEM.Z(IX(i));
     tdsfsample.scaling=scaling_model;
-    
+
     tdsf=get_tdsf(tdsfsample,pmag_consts);
-    
+
     % assign output
-    if (strcmpi(scaling_model,'sa') || strcmpi(scaling_model,'sf') || strcmpi(scaling_model,'all')) 
+    if (strcmpi(scaling_model,'sa') || strcmpi(scaling_model,'sf') || strcmpi(scaling_model,'all'))
 
         Out(i).scaling_sp = tdsf.SF_Sf;
         Out(i).SaRc = tdsf.Rc_Sf;
@@ -77,7 +80,7 @@ for i = 1:nIX
         Out(i).scaling_ClK  = tdsf.SF_Sa36K;
         Out(i).scaling_ClTi = tdsf.SF_Sa36Ti;
         Out(i).scaling_ClFe = tdsf.SF_Sa36Fe;
-        Out(i).scaling_eth  = tdsf.SF_Saeth; 
+        Out(i).scaling_eth  = tdsf.SF_Saeth;
         Out(i).scaling_th   = tdsf.SF_Sath;
         Out(i).SaRc         = tdsf.Rc_Sa;
     end
@@ -94,7 +97,7 @@ for i = 1:nIX
     end
     if (strcmpi(scaling_model,'du') || strcmpi(scaling_model,'all'))
         Out(i).SF_Du = tdsf.SF_Du;
-        Out(i).DuRc  = tdsf.Rc_Du; 
+        Out(i).DuRc  = tdsf.Rc_Du;
     end
     if (strcmpi(scaling_model,'de') || strcmpi(scaling_model,'all'))
         Out(i).SF_De = tdsf.SF_De;
@@ -107,7 +110,7 @@ close(wb)
 sf.tdsf = tdsf;
 
 % make the means -------------------
-if (strcmpi(scaling_model,'sa') || strcmpi(scaling_model,'sf') || strcmpi(scaling_model,'all')) 
+if (strcmpi(scaling_model,'sa') || strcmpi(scaling_model,'sf') || strcmpi(scaling_model,'all'))
 
     sf.tdsf.SF_Sf = nanmean(vertcat(Out.scaling_sp),1);
     sf.tdsf.Rc_Sf = nanmean(vertcat(Out.SaRc),1);
@@ -120,7 +123,7 @@ if (strcmpi(scaling_model,'sa') || strcmpi(scaling_model,'sf') || strcmpi(scalin
     sf.tdsf.SF_Sa36K  = nanmean(vertcat(Out.scaling_ClK),1);
     sf.tdsf.SF_Sa36Ti = nanmean(vertcat(Out.scaling_ClTi),1);
     sf.tdsf.SF_Sa36Fe = nanmean(vertcat(Out.scaling_ClFe),1);
-    sf.tdsf.SF_Saeth  = nanmean(vertcat(Out.scaling_eth),1); 
+    sf.tdsf.SF_Saeth  = nanmean(vertcat(Out.scaling_eth),1);
     sf.tdsf.SF_Sath   = nanmean(vertcat(Out.scaling_th),1);
     sf.tdsf.Rc_Sa     = nanmean(vertcat(Out.SaRc),1);
 end
@@ -137,10 +140,9 @@ if (strcmpi(scaling_model,'li') || strcmpi(scaling_model,'all'))
 end
 if (strcmpi(scaling_model,'du') || strcmpi(scaling_model,'all'))
     sf.tdsf.SF_Du = nanmean(vertcat(Out.SF_Du),1);
-    sf.tdsf.Rc_Du = nanmean(vertcat(Out.DuRc),1); 
+    sf.tdsf.Rc_Du = nanmean(vertcat(Out.DuRc),1);
 end
 if (strcmpi(scaling_model,'de') || strcmpi(scaling_model,'all'))
     sf.tdsf.SF_De = nanmean(vertcat(Out.SF_De),1);
     sf.tdsf.Rc_De = nanmean(vertcat(Out.DeRc));
 end
-

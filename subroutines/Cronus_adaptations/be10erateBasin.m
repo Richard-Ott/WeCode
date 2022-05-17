@@ -1,3 +1,6 @@
+% This function was published within Cronus v2.1 by Marrero et al. 2016
+% and addpted for WeCode by Richard Ott, 2021
+%
 % [erate,eratemm]=be10erate(sampledata,sampleuncertainties,scaling_model)
 %
 %  Given the data for a sample and associated one standard
@@ -8,7 +11,7 @@
 %1. Latitude (decimal degrees, -90(S) to +90(N))
 %2. Longitude (decimal degrees, 0-360 degrees east)
 %3. Elevation (meters)
-%4. Pressure (hPa)      
+%4. Pressure (hPa)
 %5. sample thickness (cm)
 %6. bulk density (g/cm^3)
 %7. Shielding factor for terrain, snow, etc. (unitless)
@@ -21,9 +24,9 @@
 %
 % A second input vector, sampleuncertainties, contains 1-sigma
 % uncertainties for all 13 inputs.  In general, we assume that
-% these 13 inputs are uncorrelated. 
+% these 13 inputs are uncorrelated.
 %
-% scaling_model is one of 'DE','DU','LI','LM','SA','SF','ST' and 
+% scaling_model is one of 'DE','DU','LI','LM','SA','SF','ST' and
 % informs which scaling model is being used
 %
 % Returns:
@@ -73,7 +76,7 @@ maxage=1000;                             % It'll be saturated after 8200ka, edit
 %
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  This is depthtotop + maxage * erosion (g/cm2/kyr) +
-% thickness * density + a safety factor. 
+% thickness * density + a safety factor.
 maxdepth=sp.depthtotop+maxage*sp.epsilon+sp.ls*sp.rb+2000;
 %
 % Computed parameters.
@@ -130,7 +133,7 @@ for i=1:15
   end
 end
 %
-% Add in terms for the uncertainty in production rates.  
+% Add in terms for the uncertainty in production rates.
 %
 %
 % Uncertainty in PsBe.
