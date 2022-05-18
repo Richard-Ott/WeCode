@@ -2,10 +2,9 @@
 % soil-bedrock weathering.
 % Richard Ott, 2021
 
-clc
-clear 
-close all
+clc; clear; close all
 addpath '.\subroutines'
+addpath '.\subroutines\Cronus_adaptations'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
@@ -17,10 +16,10 @@ addpath '.\subroutines'
 % THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();        % interactively choose the DEM that encompasses the basin
-    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big
     % basin and you want the scaling. You may want to save the scaling data
     % for later re-runs.
-    
+
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num(:,2),num(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 

@@ -4,14 +4,13 @@
 % For 36Cl a pure carbonate composition is assumed and therefore only Ca
 % spallation and muon production are considered.
 % Richard Ott, 2021
-clc
-clear 
-close all
+clc; clear; close all
 addpath '.\subroutines'
+addpath '.\subroutines\Cronus_adaptations'
 
 %% PRODUCTION RATES ----------------------------------------------------- %
 p = 1013.25;         % hPa, standard atmosphere
-Ls  = 160;           % attenuation length spallation in g/cm²
+Ls  = 160;           % attenuation length spallation in g/cmï¿½
 Ps10  = 4.01;        % 10Be spallation, Phillips et al., 2016
 Ps36  = 52.16;       % 36Cl spallation from Ca, Marrero et al., 2016
 % 10Be Muons --------
@@ -42,13 +41,13 @@ P36_nm=p_muons.P(2); % surface production rate at/g
 %% SOIL WEATHERING ENRICHMENT/DEPLETION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Xs_Xr = 0:0.01:5;             % ratio of enrichment of depletion of target mineral in the soil vs bedrock Xsoil/Xrock
-ph = 20:1:200;                % soil mass in g/cm²
+ph = 20:1:200;                % soil mass in g/cmï¿½
 
-CEF = nan(length(ph),length(Xs_Xr));      % chemical erosion factor 
+CEF = nan(length(ph),length(Xs_Xr));      % chemical erosion factor
 p_err = CEF;                              % percent error compared to standard denudation
 
 % loop through all combinations of soil mass and enrichment/depletion
-% ratios for 
+% ratios for
 Ps = {Ps10, Ps36}; Pnm = {P10_nm, P36_nm}; Pfm = {P10_fm, P36_fm};
 Lnm = {L10_nm, L36_nm}; Lfm = {L10_fm, L36_fm};
 figure()
@@ -139,7 +138,7 @@ for n = 1:2
 
         end
     end
-    
+
     subplot(1,2,n)
     [X,Y] = meshgrid(Wr,ph);
     % load colormap
@@ -168,7 +167,7 @@ Xb = 0.7;
 figure()
 % plot the N-curve for 1 sample -------------------------------------------
 subplot(1,3,1)
-Wsamp = 13.5; %g /cm²/ka 13.5
+Wsamp = 13.5; %g /cmï¿½/ka 13.5
 ph_samp = 200; % 200
 D = 0:1:100;
 D = D./1e3; Wsamp = Wsamp./1e3; % convert to g/cm/a
@@ -190,10 +189,10 @@ W = W./1e3;          % g/cm2/a
 D_Nmax = nan(length(ph),length(W));
 D_unique = size(D_Nmax);
 D_unique_dmin = false(size(D_Nmax));
-options = optimset('MaxIter',5e4,'TolFun',100,'TolX',0.05); 
+options = optimset('MaxIter',5e4,'TolFun',100,'TolX',0.05);
 for i = 1:length(ph)
     for j = 1:length(W)
-        
+
         % D_Nmax %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % this is derivative of nuclide concentrations for a soluble
         % mineral
@@ -215,7 +214,7 @@ for i = 1:length(ph)
             disp('too low value, finding higher solution')
             D_Nmax(i,j) = fzero(Ndiv,0.2);
         end
-        
+
         x0 = 0.1;
         while isnan(D_Nmax(i,j))
             x0 = x0/2;
@@ -246,10 +245,10 @@ for i = 1:length(ph)
                  P36_fm.*L36_fm./x.*exp(-ph(i)/L36_fm) + (P36_fm .*(1-exp(-ph(i)./L36_fm)) .* ph(i) .*(1-W(j)./(x.*Xb)))./ (x-W(j))...
                  - N_Dmin;
 
-        
+
         try
             D_unique(i,j) = fzero(N,[Dmin+0.00001,D(end)]);
-            
+
         catch
             D_unique(i,j) = Dmin;
             D_unique_dmin(i,j) = true;
@@ -298,5 +297,3 @@ h = colorbar;
 ylabel(h, 'D_Nmax')
 ylim([min(ph),max(ph)])
 xlim([min(W),max(W)])
-
-

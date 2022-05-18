@@ -1,14 +1,14 @@
-% This in an example script on how to calculate the denudation rate for a 
-% paired nuclide measurement of a soluble and an insoluble target mineral. 
+% This in an example script on how to calculate the denudation rate for a
+% paired nuclide measurement of a soluble and an insoluble target mineral.
 %
 % Richard Ott, 2021
 
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded to other nuclides
-clc
-clear 
-close all
+tic
+clc; clear; close all
 addpath '.\subroutines'
+addpath '.\subroutines\Cronus_adaptations'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Paired.xlsx',1);
@@ -20,10 +20,10 @@ addpath '.\subroutines'
 % THIS STEP REQUIRES TOPOTOOLBOX FUNCTIONS (Schwanghart & Scherler, 2014)
 if strcmpi('basin',DEMdata.method)
     DEMdata.DEM = GRIDobj();      % interactively choose the DEM that encompasses the basin
-    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big 
+    % Scaling schemes like 'sa' and 'sf'  can take a long time for a big
     % basin and you want the scaling. You may want to save the scaling data
     % for later re-runs.
-    
+
     [DEMdata.DB,DEMdata.utmzone] = getBasins(DEMdata.DEM,num.num10(:,2),num.num10(:,1),'ll');  % delineate drainage basins and check their geometry
 end
 
@@ -37,7 +37,7 @@ pars36 = Cronus_prep36(num.num36,DEMdata);
 
 %% Run MCMC inversion for "real" denudation rate and weathering rate ---- %
 
-D = [50,5e2];       % Denudation rates to test, min/max in mm/ka 
+D = [50,5e2];       % Denudation rates to test, min/max in mm/ka
 
 % run inversion
 [XMAP,MAP,WMAP] = pairedCRN_Optim(pars10,pars36,D,X);
@@ -55,11 +55,11 @@ disp(['The calculated weathering rate = ' num2str(round(WMAP)) ' ' char(177) ' '
 switch X.mode
     case 'soil'
         disp(['Fraction of quartz in bedrock fQzB = '  num2str(round(XMAP.fQzB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
-        disp(['Fraction of X in bedrock fXB = '        num2str(round(XMAP.fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])  
-        disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(XMAP.fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])     
+        disp(['Fraction of X in bedrock fXB = '        num2str(round(XMAP.fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
+        disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(XMAP.fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
     case 'bedrock'
         disp(['Fraction of quartz in soil fQzS = '     num2str(round(XMAP.fQzS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2)) ])
         disp(['Fraction of X in soil fXS = '           num2str(round(XMAP.fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
         disp(['Fraction of calcite in soil fCaS = '    num2str(round(XMAP.fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
 end
-
+toc

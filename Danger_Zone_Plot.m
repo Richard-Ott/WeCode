@@ -1,5 +1,5 @@
 % The script calculates the "danger zone" for a soluble target mineral. The
-% "danger zone" is defined as either (1) the denudation rate below which 
+% "danger zone" is defined as either (1) the denudation rate below which
 % increased denudation does not lead to a decrease in nuclide concentration
 % in the target mineral (D_Nmax), or (2) the denudation rate below which
 % there is no unique denudation rate solution (D_unique).
@@ -8,10 +8,9 @@
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded to other nuclides
 
-clc
-clear 
-close all
+clc; clear; close all
 addpath '.\subroutines'
+addpath '.\subroutines\Cronus_adaptations'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Cl.xlsx');
