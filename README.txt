@@ -7,6 +7,7 @@ In particular, the codes calculate denudation rates for landscpaes where cosmoge
 nuclides were measured and weathering is non negligable. I have adopted the code package
 for 10Be measurements on an insoluble target mineral (e.q., quartz) AND/OR 36Cl measurements
 on a soluble target mineral (e.g., calcite). 
+Since, this branch focuses on 10Be applications, it runs WITHOUT DECAY!!!
 
 The codes are based on an adpation of Riebe and Granger equation 14.
 Cronus Calc v2.1 is used for the calculation of production rates and needs to be in the 

@@ -6,10 +6,9 @@
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded to other nuclides
 
-clc
-clear 
-close all
+clc; clear; close all
 addpath '.\subroutines'
+addpath '.\subroutines\Cronus'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
