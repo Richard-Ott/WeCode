@@ -8,7 +8,7 @@
 
 clc; clear; close all
 addpath '.\subroutines'
-addpath '.\subroutines\Cronus'
+addpath '.\subroutines\Cronus_adaptations'
 
 % load data
 [num,sampName,X,DEMdata] = CosmoDataRead('Test_Input_Single_Be.xlsx');
