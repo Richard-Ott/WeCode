@@ -5,7 +5,6 @@
 
 % the current version is written for 10Be and 36Cl, could easily be
 % expanded to other nuclides
-tic
 clc; clear; close all
 addpath '.\subroutines'
 addpath '.\subroutines\Cronus_adaptations'
@@ -62,4 +61,3 @@ switch X.mode
         disp(['Fraction of X in soil fXS = '           num2str(round(XMAP.fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
         disp(['Fraction of calcite in soil fCaS = '    num2str(round(XMAP.fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
 end
-toc

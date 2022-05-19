@@ -65,15 +65,16 @@ end
 
 % outputs the values for the higher rate if there was a nonunique solution
 try
-    disp(['Denudation rate = ' num2str(round(MAP(end))) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
+    [MAP,ind]  = max(MAP);
+    disp(['Denudation rate = ' num2str(round(MAP)) ' ' char(177) ' ' num2str(round(MAP_uncerts)) ' mm/ka'])
     switch X.mode
         case 'soil'
-            disp(['Fraction of quartz in bedrock fQzB = '  num2str(round(X_MAP(end).fQzB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
-            disp(['Fraction of X in bedrock fXB = '        num2str(round(X_MAP(end).fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
-            disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(X_MAP(end).fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
+            disp(['Fraction of quartz in bedrock fQzB = '  num2str(round(X_MAP(ind).fQzB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
+            disp(['Fraction of X in bedrock fXB = '        num2str(round(X_MAP(ind).fXB,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
+            disp(['Fraction of calcite in bedrock fCaB = ' num2str(round(X_MAP(ind).fCaB,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
         case 'bedrock'
-            disp(['Fraction of quartz in soil fQzS = '     num2str(round(X_MAP(end).fQzS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
-            disp(['Fraction of X in soil fXS = '           num2str(round(X_MAP(end).fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
-            disp(['Fraction of calcite in soil fCaS = '    num2str(round(X_MAP(end).fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
+            disp(['Fraction of quartz in soil fQzS = '     num2str(round(X_MAP(ind).fQzS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(1),2))])
+            disp(['Fraction of X in soil fXS = '           num2str(round(X_MAP(ind).fXS,2))  ' ' char(177) ' ' num2str(round(X_uncerts(2),2))])
+            disp(['Fraction of calcite in soil fCaS = '    num2str(round(X_MAP(ind).fCaS,2)) ' ' char(177) ' ' num2str(round(X_uncerts(3),2))])
     end
 end
