@@ -9,7 +9,7 @@ This repository contains functions to calculate denuation rates in landscapes wh
 minerals with different solubilities are present. All necessary functions are in the
 subroutines folder. The repository also contains example scripts on how to use the
 supplied functions (except the Cronus package, which can be downloaded here 
-http://cronus.cosmogenicnuclides.rocks/). 
+https://bitbucket.org/cronusearth/cronus-calc/src/v2.1/). 
 In particular, the codes calculate denudation rates for landscpaes where cosmogenic 
 nuclides were measured and weathering is non negligable. I have adopted the code package
 for 10Be measurements on an insoluble target mineral (e.q., quartz) AND/OR 36Cl 
