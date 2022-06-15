@@ -148,8 +148,8 @@ for n = 1:2
     imagesc(Wr,ph,p_err,[0,500]); hold on
     colormap(cmap)
     levels = [0:20:200,200:100:5e3];
-    contour(X,Y,p_err,'LineColor','k','LevelList',levels)
-    contour(X,Y,p_err,[200,200],'LineColor',[.2,.2,.2],'ContourZLevel',1e6,'LineWidth',2)
+    contour(X,Y,p_err,'LineColor','k','LevelList',levels,'LineWidth',1)
+    contour(X,Y,p_err,[200,200],'LineColor',[.2,.2,.2],'ContourZLevel',1e6,'LineWidth',2.2)
     set(gca,'YDir','normal');
     xlabel('fraction soil-bedrock interface weathering');
     ylabel('Soil mass (g/cm^2)');
