@@ -37,7 +37,6 @@ end
 tic
 % ------------------------------------------------------------------- %
 % set some constants
-pp = physpars();
 sp.depthtotop = soil_mass;           % set depth to soil bedrock interface
 % Figure out the maximum possible depth at which we'll ever need a
 % production rate.  

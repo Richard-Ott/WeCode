@@ -105,7 +105,7 @@ end
 deltapp = pars.pp;
 if X.n == 1
     thisdelta = 0.1*abs(pars.pp.PsBe);
-    deltapp.PsBe= pars.pp.PsBe+ thisdelta;  % 1% chnage in spallation production
+    deltapp.PsBe= pars.pp.PsBe+ thisdelta;  % 10% chnage in spallation production
     % run inversion, try to start close to final value to speed up
     % inversion
     parsC = pars;
