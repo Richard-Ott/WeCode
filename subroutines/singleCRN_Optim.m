@@ -73,6 +73,12 @@ else
 end
 [MAP,~] = fminsearchbnd(fun,x0,D(1),D(2),options);
 
+if MAP == D(1)
+    warning('The best-fit denudation rate equals the minimum denudation rate. Check your input and think about your assumptions.')
+    [nobound_MAP,~] = fminsearchbnd(fun,x0,0,D(2),options);
+    disp(['Without input constraints the best-fit denudation rate would be ' num2str(nobound_MAP/sp.rb*10) ' mm/ka'])
+end
+
 toc
 
 % for soluble mineral with a nuclide concentration that is nonunique, we
