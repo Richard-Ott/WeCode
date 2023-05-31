@@ -75,7 +75,20 @@ end
 
 if MAP == D(1)
     warning('The best-fit denudation rate equals the minimum denudation rate. Check your input and think about your assumptions.')
-    [nobound_MAP,~] = fminsearchbnd(fun,x0,0,D(2),options);
+    if X.n == 1
+        minBound = x0;
+    else
+        minBound = 0;
+    end
+    [nobound_MAP,~] = fminsearchbnd(fun,x0,minBound,D(2),options);
+    % I have to find a better way to define the minimum possible bound for
+    % this search in the future, because often a local minimum leads the
+    % solver to pick the minimum search bound instead of the global
+    % minimum. Should be fixed in future versions. For now follow the
+    % instructions in the warning in case you run into this problem.
+    if nobound_MAP == minBound
+        warning('The best-fit denudation rate equals the minimum denudation rate due to a local minimum. Increase the minBound variable (in singleCRN_Optim.m) manually to find the best-fit denudation rate without mineralogical input constraints')
+    end
     disp(['Without input constraints the best-fit denudation rate would be ' num2str(nobound_MAP/sp.rb*10) ' mm/ka'])
 end
 
