@@ -1,6 +1,8 @@
 # WeCode - Weathering Corrections for denudation rates
 
-![Alt text](cartoon_be_cl.png)
+<div style="background-color:white; padding: 5px;">
+    <img src="cartoon_be_cl.png" alt="image description" />
+</div>
 
 This repository contains functions to calculate denudation rates in landscapes where
 minerals with different solubilities are present. All necessary functions are in the
