@@ -50,7 +50,7 @@ enrichment/depletion of minerals for different soil depths.
 
 * SLHL_bias_plots: Run this script to recreate figures 3,5, and 7 in Ott et. al 2022.
 
-# Important!
+## Important!
 If you want to use the CDF (chemical depletion fraction) input, switch to the CDF branch of the repository
 
 ## References
