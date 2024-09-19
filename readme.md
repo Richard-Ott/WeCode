@@ -19,14 +19,14 @@ TopoToolbox in your Matlab search path. The code will then compute average nucli
 rates for your basin in a pixel-by-pixel approach. The code also provides a set of modified
 Cronus Calc v2.1 functions to achieve this.
 
-## Which files to use and run
+## Which files to fill in and run
 Example input files are provided for all scripts, including test data that you can use to
 run the code. 
 Single nuclide measurement with an independent weathering rate:
 Test_Input_Single_Be.xlsx -> 10Be, Test_Input_Single_Cl.xlsx -> 36Cl
 Test_input_Paired.xlsx is for running the paired nuclide optimization
 
-## The difference modes to run 
+## Different modes for denudation calculation 
 
 * PairedCRN_denudation:
 Assuming you have a paired 10Be and 36Cl measurement and know your bedrock OR regolith chemistry 
@@ -50,8 +50,8 @@ enrichment/depletion of minerals for different soil depths.
 
 * SLHL_bias_plots: Run this script to recreate figures 3,5, and 7 in Ott et. al 2022.
 
-IF YOU WANT TO USE A CDF (chemical depletion fraction) INPUT, SWITCH TO THE CDF BRANCH OF THE
-REPOSITORY!
+# Important!
+If you want to use the CDF (chemical depletion fraction) input, switch to the CDF branch of the repository
 
 ## References
 Cite as:
